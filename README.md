@@ -1,6 +1,6 @@
 # gungi.js
 
-[![Build Status](https://travis-ci.org/jwyce/gungi.js.svg?branch=master)](https://travis-ci.org/jwyce/gungi.js) 
+[![Build Status](https://travis-ci.org/jwyce/gungi.js.svg?branch=master)](https://travis-ci.org/jwyce/gungi.js) ![npm](https://img.shields.io/npm/dw/gungi.js?color=%231ED760&logo=npm)
 ![GitHub](https://img.shields.io/github/license/jwyce/gungi.js)
 
 gungi.js is a JavaScript library which contains all the necessary logic for the strategy game from the HUNTER×HUNTER manga and it implements the [rules](https://www.docdroid.net/P4r6Fvq/gungi.pdf) established by reddit users [u/Zaneme](https://www.reddit.com/user/Zaneme) and [u/squal777](https://www.reddit.com/user/squal777).
