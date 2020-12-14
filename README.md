@@ -5,9 +5,7 @@
 
 gungi.js is a JavaScript library which contains all the necessary logic for the strategy game from the HUNTER×HUNTER manga and it implements the [rules](https://www.docdroid.net/P4r6Fvq/gungi.pdf) established by reddit users [u/Zaneme](https://www.reddit.com/user/Zaneme) and [u/squal777](https://www.reddit.com/user/squal777).
 
-The library is used for move
-generation/validation, piece placement/movement, and check/checkmate/stalemate
-detection - basically everything but the AI.
+The library is used for move generation / validation, piece placement / movement, and check / checkmate / stalemate detection - basically everything but the AI.
 
 ## Installation
 
