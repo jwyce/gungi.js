@@ -1,9 +1,9 @@
 {
 	"name": "gungi.js",
-	"version": "1.0.2",
+	"version": "1.0.3",
 	"description": "library which contains all the necessary logic for the strategy game from the HUNTER×HUNTER manga",
-	"main": "lib/gungi.js",
-	"types": "src/gungi.d.ts",
+	"main": "gungi.js",
+	"types": "gungi.d.ts",
 	"type": "module",
 	"homepage": "https://github.com/jwyce/gungi.js#readme",
 	"keywords": [
@@ -18,14 +18,10 @@
 	},
 	"license": "MIT",
 	"devDependencies": {
-		"@babel/cli": "^7.14.3",
-		"@babel/core": "^7.14.3",
-		"@babel/preset-env": "^7.14.2",
 		"jest": "^25.1.0",
 		"prettier": "2.2.1"
 	},
 	"scripts": {
-		"test": "jest",
-		"build": "babel src/gungi.js -d lib"
+		"test": "jest"
 	}
 }

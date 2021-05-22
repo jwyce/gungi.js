@@ -12,5 +12,5 @@
 		"forceConsistentCasingInFileNames": true,
 		"strictFunctionTypes": true
 	},
-	"files": ["src/gungi.d.ts"]
+	"files": ["gungi.d.ts"]
 }
