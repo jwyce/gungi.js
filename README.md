@@ -9,10 +9,14 @@ The library is used for move generation / validation, piece placement / movement
 
 ## Installation
 
-Install the latest stable version of `gungi.js` from `npm`
+To install the latest stable version of `gungi.js`
 
 ```
+# NPM
 npm install gungi.js
+
+# Yarn
+yarn add gungi.js
 ```
 
 ## Example Code
@@ -20,7 +24,7 @@ npm install gungi.js
 The code below plays a random game of gungi:
 
 ```js
-const { Gungi } = require('./gungi.js')
+import { Gungi } from 'gungi'
 const gungi = new Gungi()
 var move_count = 0;
 
@@ -165,7 +169,6 @@ Returns true if the game has ended via checkmate or stalemate. Otherwise, return
 Returns the tower of pieces on the square:
 
 ```js
-const {Gungi} = require('./gungi.js')
 const gungi = new Gungi()
 
 gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
@@ -184,7 +187,6 @@ gungi.get('8-5')
 Returns the top piece of the tower on the square:
 
 ```js
-const {Gungi} = require('./gungi.js')
 const gungi = new Gungi()
 
 gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
@@ -211,7 +213,6 @@ Returns true or false if the side to move has been checkmated. *(i.e. has no leg
 Returns true or false if the side to move is in check.
 
 ```js
-const {Gungi} = require('./gungi.js')
 const gungi = new Gungi()
 
 gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
@@ -252,7 +253,6 @@ Attempts to make a move on the board, returning a move object if the move was le
 Returns a list of legal moves from the current position. The function takes an optional parameter which controls the single-square move generation and stockpile move generation.
 
 ```js
-const {Gungi} = require('./gungi.js')
 const gungi = new Gungi()
 
 
@@ -318,7 +318,6 @@ gungi.moves({stock_piece: gungi.ARCHER}) // move generation for stockpile piece
 Returns a list of pieces from the player's current stockpiles. This function takes an optional parameter which filters the stockpile by player color.
 
 ```js
-const {Gungi} = require('./gungi.js')
 const gungi = new Gungi()
 
 gungi.stockpile()
@@ -382,7 +381,6 @@ Returns the game in a special Portable Game Notation (PGN) string format.
 Returns the current side to move
 
 ```js
-const {Gungi} = require('./gungi.js')
 const gungi = new Gungi()
 
 gungi.turn()
@@ -399,7 +397,6 @@ gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: g
 Returns the current phase of the game
 
 ```js
-const {Gungi} = require('./gungi.js')
 const gungi = new Gungi()
 
 gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
@@ -414,18 +411,3 @@ gungi.move({src: null, dst: null, type: gungi.READY})
 gungi.phase()
 // -> 'game'
 ```
-
-## Future Enhancements (How to Contribute?)
-Any contributions including but not limited to the following will be greately appreciated 😊
-- 👩‍💻 implement the below methods
-- 🐛 squash/report any bugs in the above API
-- 🧪 add more test cases 
-
-### .undo()
-Takeback the last half-move, returning a move object if successful, otherwise null.
-
-### .fen()
-Return a compact string representation containing all the necessary information to reconstruct the current game's position.
-
-### .load(fen)
-The board is cleared, and the FEN string is loaded. Returns true if the position was successfully loaded, otherwise false.

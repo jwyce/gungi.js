@@ -1,25 +1,27 @@
 {
-  "name": "gungi.js",
-  "version": "1.0.0",
-  "description": "library which contains all the necessary logic for the strategy game from the HUNTER×HUNTER manga",
-  "main": "gungi.js",
-  "homepage": "https://github.com/jwyce/gungi.js#readme",
-  "keywords": [
-    "gungi"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/jwyce/gungi.js.git"
-  },
-  "bugs": {
-    "url": "https://github.com/jwyce/gungi.js/issues"
-  },
-  "license": "MIT",
-  "devDependencies": {
-    "jest": "^25.1.0",
-    "prettier": "2.2.1"
-  },
-  "scripts": {
-    "test": "jest"
-  }
+	"name": "gungi.js",
+	"version": "1.0.1",
+	"description": "library which contains all the necessary logic for the strategy game from the HUNTER×HUNTER manga",
+	"main": "gungi.js",
+	"types": "gungi.d.ts",
+	"type": "module",
+	"homepage": "https://github.com/jwyce/gungi.js#readme",
+	"keywords": [
+		"gungi"
+	],
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/jwyce/gungi.js.git"
+	},
+	"bugs": {
+		"url": "https://github.com/jwyce/gungi.js/issues"
+	},
+	"license": "MIT",
+	"devDependencies": {
+		"jest": "^25.1.0",
+		"prettier": "2.2.1"
+	},
+	"scripts": {
+		"test": "jest"
+	}
 }
