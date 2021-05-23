@@ -24,7 +24,7 @@ yarn add gungi.js
 The code below plays a random game of gungi:
 
 ```js
-import { Gungi } from 'gungi'
+const { Gungi } = require('gungi.js');
 const gungi = new Gungi()
 var move_count = 0;
 
