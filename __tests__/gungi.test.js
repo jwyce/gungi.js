@@ -1,6 +1,6 @@
 const { TestScheduler } = require('jest');
 
-const { Gungi } = require('../lib/gungi');
+const { Gungi } = require('gungi.js');
 
 // describe('Checkmate', () => {
 // test a position that gives checkmate
