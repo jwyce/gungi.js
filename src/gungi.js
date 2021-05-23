@@ -333,7 +333,7 @@ class Gungi {
 						type: STACK,
 					});
 				}
-				if (dst.piece.color != turn) {
+				if (dst.piece.color !== this._turn) {
 					moves.push({
 						src: square,
 						dst: pos,
@@ -447,7 +447,7 @@ class Gungi {
 		return squares;
 	};
 
-	get_stockpile = (color) => {
+	stockpile = (color) => {
 		if (color == null) {
 			return this._stockpile;
 		}
@@ -470,7 +470,7 @@ class Gungi {
 		return stockPiece;
 	};
 
-	get_captured = (color) => {
+	captured = (color) => {
 		if (color == null) {
 			return this._captured;
 		}
@@ -1619,7 +1619,7 @@ class Gungi {
 						return moves;
 					}
 
-					var pieces = this.get_stockpile(BLACK)
+					var pieces = this.stockpile(BLACK)
 						.filter((x) => x.amount > 0)
 						.map((x) => x.piece);
 					pieces.forEach((piece) => {
@@ -1704,7 +1704,7 @@ class Gungi {
 						return moves;
 					}
 
-					var pieces = this.get_stockpile(WHITE)
+					var pieces = this.stockpile(WHITE)
 						.filter((x) => x.amount > 0)
 						.map((x) => x.piece);
 					pieces.forEach((piece) => {
@@ -1768,7 +1768,7 @@ class Gungi {
 					return moves;
 				}
 
-				var pieces = this.get_stockpile(BLACK)
+				var pieces = this.stockpile(BLACK)
 					.filter((x) => x.amount > 0)
 					.map((x) => x.piece);
 				pieces.forEach((piece) => {
@@ -1792,7 +1792,7 @@ class Gungi {
 								) {
 									// marhsall cannot be stacked on
 									if (piece.type == PAWN) {
-										var pawns_in_file = board
+										var pawns_in_file = this._board
 											.map((x) => x[j - 1])
 											.filter((x) =>
 												x.some(
@@ -1828,7 +1828,7 @@ class Gungi {
 					// maximum number of pieces at any time is 26
 					return moves;
 				}
-				var pieces = this.get_stockpile(WHITE)
+				var pieces = this.stockpile(WHITE)
 					.filter((x) => x.amount > 0)
 					.map((x) => x.piece);
 				pieces.forEach((piece) => {
@@ -1852,7 +1852,7 @@ class Gungi {
 								) {
 									// marhsall cannot be stacked on
 									if (piece.type == PAWN) {
-										var pawns_in_file = board
+										var pawns_in_file = this._board
 											.map((x) => x[j - 1])
 											.filter((x) =>
 												x.some(
@@ -1896,7 +1896,7 @@ class Gungi {
 				for (var j = FILE_1; j <= FILE_9; j++) {
 					var square = i + '-' + j;
 					var src = this.get_top(square);
-					if (src != null && src.piece.color == turn) {
+					if (src != null && src.piece.color === this._turn) {
 						var probes = this._single_sqaure_move_gen(src, square);
 						moves = moves.concat(
 							this._generate_moves_from_probes(probes, src, square)
@@ -1929,7 +1929,7 @@ class Gungi {
 				case ATTACK:
 					var piece = this._remove(move.dst);
 
-					if (get_top(move.dst) == null) {
+					if (this.get_top(move.dst) == null) {
 						var temp = this._remove(move.src);
 						this._put(temp, move.dst);
 					}
@@ -1994,19 +1994,19 @@ class Gungi {
 		return moves;
 	};
 
-	get_board = () => {
+	board = () => {
 		return this._board;
 	};
 
-	get_history = () => {
+	history = () => {
 		return this._history;
 	};
 
-	get_turn = () => {
+	turn = () => {
 		return this._turn;
 	};
 
-	get_phase = () => {
+	phase = () => {
 		return this._phase;
 	};
 
@@ -2120,7 +2120,7 @@ class Gungi {
 					}
 				} else if (this._drafted.w == 1 && this._drafted.b == 0) {
 					this._turn = BLACK;
-				} else if (this_drafted.w == 0 && this_drafted.b == 1) {
+				} else if (this._drafted.w == 0 && this._drafted.b == 1) {
 					this._turn = WHITE;
 				} else if (this._drafted.w == 1 && this._drafted.b == 1) {
 					this._turn = WHITE;
