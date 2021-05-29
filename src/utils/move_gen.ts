@@ -904,7 +904,7 @@ export const single_sqaure_move_gen = (
 										{
 											piece: {
 												type: deep_piece_under.type,
-												color: deep_piece_under.color,
+												color: src.piece.color,
 											},
 											tier: src.tier,
 										},
@@ -929,7 +929,7 @@ export const single_sqaure_move_gen = (
 								single_sqaure_move_gen(
 									board,
 									{
-										piece: { type: piece_under.type, color: piece_under.color },
+										piece: { type: piece_under.type, color: src.piece.color },
 										tier: src.tier,
 									},
 									square
