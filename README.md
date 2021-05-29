@@ -1,6 +1,6 @@
 # gungi.js
 
-[![Build Status](https://travis-ci.com/jwyce/gungi.js.svg?branch=master)](https://travis-ci.com/jwyce/gungi.js) ![npm](https://img.shields.io/npm/dt/gungi.js?color=%231ED760&logo=npm)
+![npm](https://img.shields.io/npm/dt/gungi.js?color=%231ED760&logo=npm)
 ![GitHub](https://img.shields.io/github/license/jwyce/gungi.js)
 
 gungi.js is a JavaScript library which contains all the necessary logic for the strategy game from the HUNTER×HUNTER manga and it implements the [rules](https://www.docdroid.net/P4r6Fvq/gungi.pdf) established by reddit users [u/Zaneme](https://www.reddit.com/user/Zaneme) and [u/squal777](https://www.reddit.com/user/squal777).
@@ -26,16 +26,13 @@ The code below plays a random game of gungi:
 ```js
 const { Gungi } = require('gungi.js');
 const gungi = new Gungi()
-var move_count = 0;
 
-// after 1000 moves we will call it a draw
-while (!gungi.game_over() && move_count < 1000) {       
+while (!gungi.game_over()) {       
     const moves = gungi.moves()
     const move = moves[Math.floor(Math.random() * moves.length)]
     gungi.move(move)
-    move_count++;
 }
-console.log(gungi.pgn())
+console.log(gungi.ascii())
 ```
 
 ## API
@@ -67,7 +64,7 @@ console.log(gungi.pgn())
     const CANNON = '砲';
     const SPY = '忍';
     const PAWN = '兵';
-    const MARSHALL = '帥';
+    const MARSHAL = '帥';
 ```
 
 ### .ascii()
@@ -87,8 +84,8 @@ Returns a string containing an ASCII diagram of the current position.
 const gungi = new Gungi()
 
 // make some moves
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.BLACK}, dst: '8-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.WHITE}, dst: '1-5', type: gungi.PLACE})
 
@@ -117,16 +114,16 @@ gungi.ascii()
 //         ｆ１  ｆ２  ｆ３  ｆ４  ｆ５  ｆ６  ｆ７  ｆ８  ｆ９
 ```
 
-### .board()
+### .get_board()
 
 Returns a tensor representation of the current position (9x9x3 array). Empty squares are represented by `null`.
 
 ```js
 const gungi = new Gungi()
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 
-gungi.board()
+gungi.get_board()
 // -> [
   [...],
   [...],
@@ -171,8 +168,8 @@ Returns the tower of pieces on the square:
 ```js
 const gungi = new Gungi()
 
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.BLACK}, dst: '8-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.WHITE}, dst: '1-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.ARCHER, color: gungi.BLACK}, dst: '8-5', type: gungi.PLACE})
@@ -189,8 +186,8 @@ Returns the top piece of the tower on the square:
 ```js
 const gungi = new Gungi()
 
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.BLACK}, dst: '8-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.WHITE}, dst: '1-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.ARCHER, color: gungi.BLACK}, dst: '8-5', type: gungi.PLACE})
@@ -199,10 +196,6 @@ gungi.move({src: {type: gungi.SPY, color: gungi.WHITE}, dst: '1-5', type: gungi.
 gungi.get_top('8-5')
 // -> { piece: { type: '弓', color: 'b' }, tier: 2 }
 ```
-
-### .history()
-
-Returns a list containing the moves of the current game. 
 
 ### .in_checkmate()
 
@@ -215,8 +208,8 @@ Returns true or false if the side to move is in check.
 ```js
 const gungi = new Gungi()
 
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.BLACK}, dst: '8-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.WHITE}, dst: '1-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.CAPTAIN, color: gungi.BLACK}, dst: '8-5', type: gungi.PLACE})
@@ -256,8 +249,8 @@ Returns a list of legal moves from the current position. The function takes an o
 const gungi = new Gungi()
 
 
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 gungi.move({src: null, dst: null, type: gungi.READY})
 gungi.move({src: {type: gungi.PAWN, color: gungi.WHITE}, dst: '1-5', type: gungi.PLACE})
 gungi.move({src: {type: gungi.PAWN, color: gungi.WHITE}, dst: '1-6', type: gungi.PLACE})
@@ -313,14 +306,14 @@ gungi.moves({stock_piece: gungi.ARCHER}) // move generation for stockpile piece
 // ]
 ```
 
-### .stockpile([ options ])
+### .get_stockpile([ options ])
 
 Returns a list of pieces from the player's current stockpiles. This function takes an optional parameter which filters the stockpile by player color.
 
 ```js
 const gungi = new Gungi()
 
-gungi.stockpile()
+gungi.get_stockpile()
 // -> [
 //   { piece: { type: '帥', color: 'w' }, amount: 1 },
 //   { piece: { type: '兵', color: 'w' }, amount: 9 },
@@ -350,7 +343,7 @@ gungi.stockpile()
 //   { piece: { type: '小', color: 'b' }, amount: 4 }
 // ]
 
-gungi.stockpile(gungi.BLACK)
+gungi.get_stockpile(gungi.BLACK)
 // -> [
 //   { piece: { type: '帥', color: 'b' }, amount: 1 },
 //   { piece: { type: '兵', color: 'b' }, amount: 9 },
@@ -368,46 +361,39 @@ gungi.stockpile(gungi.BLACK)
 // ]
 ```
 
-### .captured([ options ])
 
-Returns the list of captured pieces. This function takes an optional parameter which filters the captured list by player color.
+### .turn
 
-### .pgn()
-
-Returns the game in a special Portable Game Notation (PGN) string format.
-
-### .turn()
-
-Returns the current side to move
+Property representing the current side to move
 
 ```js
 const gungi = new Gungi()
 
-gungi.turn()
+gungi.turn
 // -> 'b'
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
 
-gungi.turn()
+gungi.turn
 // -> 'w'
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 ```
 
-### .phase()
+### .phase
 
-Returns the current phase of the game
+Property representing the current phase of the game
 
 ```js
 const gungi = new Gungi()
 
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
-gungi.move({src: {type: gungi.MARSHALL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.BLACK}, dst: '7-2', type: gungi.PLACE})
+gungi.move({src: {type: gungi.MARSHAL, color: gungi.WHITE}, dst: '2-5', type: gungi.PLACE})
 
-gungi.phase()
+gungi.phase
 // -> 'draft'
 
 gungi.move({src: null, dst: null, type: gungi.READY})
 gungi.move({src: null, dst: null, type: gungi.READY})
 
-gungi.phase()
+gungi.phase
 // -> 'game'
 ```
