@@ -891,20 +891,51 @@ export const single_sqaure_move_gen = (
 					break;
 				case 2:
 				case 3:
-					//TODO: caption on captain bug
 					var piece_under = get(board, square)[src.tier - 2];
 
 					if (piece_under) {
-						moves = moves.concat(
-							single_sqaure_move_gen(
-								board,
-								{
-									piece: { type: piece_under.type, color: piece_under.color },
-									tier: src.tier,
-								},
-								square
-							)
-						);
+						if (piece_under.type === CAPTAIN) {
+							var deep_piece_under = get(board, square)[src.tier - 3];
+
+							if (deep_piece_under) {
+								moves = moves.concat(
+									single_sqaure_move_gen(
+										board,
+										{
+											piece: {
+												type: deep_piece_under.type,
+												color: deep_piece_under.color,
+											},
+											tier: src.tier,
+										},
+										square
+									)
+								);
+							} else {
+								probes = [];
+
+								var ignore_squares = [
+									{
+										rank_offset: 0,
+										file_offset: 0,
+									},
+								];
+
+								probes = get_squares_around(square, ignore_squares);
+								moves = moves.concat(probes);
+							}
+						} else {
+							moves = moves.concat(
+								single_sqaure_move_gen(
+									board,
+									{
+										piece: { type: piece_under.type, color: piece_under.color },
+										tier: src.tier,
+									},
+									square
+								)
+							);
+						}
 					}
 					break;
 			}
