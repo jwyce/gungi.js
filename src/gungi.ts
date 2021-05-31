@@ -108,7 +108,7 @@ class Gungi {
 	in_stalemate: () => boolean;
 	game_over: () => boolean;
 	get_captured: (color?: 'b' | 'w') => StockPiece[];
-  get_history: () => MoveHistory[];
+	get_history: () => MoveHistory[];
 
 	constructor() {
 		this.BLACK = BLACK;
@@ -202,9 +202,9 @@ class Gungi {
 			return get_top(this.board, square);
 		};
 
-    this.get_history = () => {
-      return [... this._history];
-    }
+		this.get_history = () => {
+			return [...this._history];
+		};
 
 		this.in_check = () => {
 			var is_in_check = false;
@@ -483,7 +483,8 @@ class Gungi {
 
 				this._turn_count++;
 				this._history.push({
-					turn: this._turn_count,
+					moveNumber: this._turn_count,
+					turn: this.turn,
 					src: legal_move.src,
 					dst: legal_move.dst,
 					type: legal_move.type,

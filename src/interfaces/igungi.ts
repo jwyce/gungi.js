@@ -4,7 +4,8 @@ export interface StockPiece {
 }
 
 export interface MoveHistory {
-	turn: number;
+	moveNumber: number;
+	turn: string;
 	src: Piece | string | null;
 	srcTier?: number;
 	dst: string | null;
