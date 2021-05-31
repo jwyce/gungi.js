@@ -14,6 +14,7 @@ import {
 	RelaxMove,
 	IsPiece,
 	Move,
+	MoveHistory,
 } from './interfaces/igungi';
 import {
 	BLACK,
@@ -90,18 +91,23 @@ class Gungi {
 	private _drafted: { w: number; b: number };
 	private _marshal_placed: { w: number; b: number };
 	private _army_size: { w: number; b: number };
+	private _history: MoveHistory[];
+	private _captured: StockPiece[];
+	private _turn_count: number;
 
 	ascii: () => string;
 	get: (square: Square) => (Piece | null)[];
 	get_top: (square: Square) => { piece: Piece | null; tier: number } | null;
 	get_board: () => (Piece | null)[][][];
-	get_stockpile: (color?: 'b' | 'w' | undefined) => StockPiece[];
+	get_stockpile: (color?: 'b' | 'w') => StockPiece[];
+	get_army_size: (color: 'b' | 'w') => number;
 	moves: (options?: { square?: Square | undefined } | undefined) => RelaxMove[];
 	move: (player_move: Move) => RelaxMove | null;
 	in_check: () => boolean;
 	in_checkmate: () => boolean;
 	in_stalemate: () => boolean;
 	game_over: () => boolean;
+	get_captured: (color?: 'b' | 'w') => StockPiece[];
 
 	constructor() {
 		this.BLACK = BLACK;
@@ -140,6 +146,8 @@ class Gungi {
 		this.turn = BLACK;
 		this.phase = DRAFT;
 		this.stockpile = [];
+		this._history = [];
+		this._captured = [];
 		this._drafted = {
 			w: 0,
 			b: 0,
@@ -152,6 +160,7 @@ class Gungi {
 			w: 0,
 			b: 0,
 		};
+		this._turn_count = 0;
 
 		Array.prototype.push.apply(this.stockpile, init_stockpile(WHITE));
 		Array.prototype.push.apply(this.stockpile, init_stockpile(BLACK));
@@ -162,10 +171,26 @@ class Gungi {
 
 		this.get_stockpile = (color?: 'w' | 'b') => {
 			if (!color) {
-				return this.stockpile;
+				return [...this.stockpile];
 			}
 
-			return this.stockpile.filter((x) => x.piece.color === color);
+			return [...this.stockpile.filter((x) => x.piece.color === color)];
+		};
+
+		this.get_army_size = (color: 'w' | 'b') => {
+			if (color === 'w') {
+				return this._army_size.w;
+			} else {
+				return this._army_size.b;
+			}
+		};
+
+		this.get_captured = (color?: 'w' | 'b') => {
+			if (!color) {
+				return [...this._captured];
+			}
+
+			return [...this._captured.filter((x) => x.piece.color == color)];
 		};
 
 		this.get = (square: Square) => {
@@ -399,6 +424,17 @@ class Gungi {
 						if (legal_move.dst) {
 							var piece = remove(this.board, legal_move.dst);
 
+							if (piece) {
+								var c = this._captured.filter(
+									(x) => JSON.stringify(x.piece) === JSON.stringify(piece)
+								);
+								if (c.length > 0) {
+									c[0].amount++;
+								} else {
+									this._captured.push({ piece, amount: 1 });
+								}
+							}
+
 							if (get_top(this.board, legal_move.dst) === null) {
 								if (legal_move && typeof legal_move.src === 'string') {
 									var temp = remove(this.board, legal_move.src);
@@ -426,6 +462,29 @@ class Gungi {
 
 						break;
 				}
+
+				var source_piece =
+					typeof legal_move.src === 'string'
+						? get_top(this.board, legal_move.src)
+						: null;
+				var destination_piece = null;
+
+				if (typeof legal_move.dst === 'string') {
+					destination_piece = get_top(this.board, legal_move.dst);
+					if (destination_piece == null) {
+						destination_piece = { piece: null, tier: 1 };
+					}
+				}
+
+				this._turn_count++;
+				this._history.push({
+					turn: this._turn_count,
+					src: legal_move.src,
+					dst: legal_move.dst,
+					type: legal_move.type,
+					srcTier: source_piece?.tier,
+					dstTier: destination_piece?.tier,
+				});
 
 				if (this.phase === DRAFT) {
 					if (this._drafted.w === 0 && this._drafted.b === 0) {

@@ -361,6 +361,17 @@ gungi.get_stockpile(gungi.BLACK)
 // ]
 ```
 
+### .get_army_size(color)
+
+Returns how many pieces given side currently has on the board (max 26)
+
+### .get_captured([ options ])
+
+Returns a list of captured pieces. This function takes an optional parameter which filters the stockpile by player color.
+
+### .get_history()
+
+Returns a list of all previous moves made.
 
 ### .turn
 

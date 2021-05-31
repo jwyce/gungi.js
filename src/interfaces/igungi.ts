@@ -3,6 +3,15 @@ export interface StockPiece {
 	amount: number;
 }
 
+export interface MoveHistory {
+	turn: number;
+	src: Piece | string | null;
+	srcTier?: number;
+	dst: string | null;
+	dstTier?: number;
+	type: 'place' | 'ready' | 'attack' | 'move' | 'stack';
+}
+
 export interface Move {
 	src: Piece | Square | null;
 	dst: Square | null;
