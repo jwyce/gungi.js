@@ -108,6 +108,7 @@ class Gungi {
 	in_stalemate: () => boolean;
 	game_over: () => boolean;
 	get_captured: (color?: 'b' | 'w') => StockPiece[];
+  get_history: () => MoveHistory[];
 
 	constructor() {
 		this.BLACK = BLACK;
@@ -200,6 +201,10 @@ class Gungi {
 		this.get_top = (square: Square) => {
 			return get_top(this.board, square);
 		};
+
+    this.get_history = () => {
+      return [... this._history];
+    }
 
 		this.in_check = () => {
 			var is_in_check = false;
