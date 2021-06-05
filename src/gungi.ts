@@ -402,6 +402,10 @@ class Gungi {
 			);
 			if (legal_moves.length) {
 				var legal_move = legal_moves[0];
+				var source_piece =
+					typeof legal_move.src === 'string'
+						? get_top(this.board, legal_move.src)
+						: null;
 				var destination_piece = null;
 
 				if (typeof legal_move.dst === 'string') {
@@ -496,19 +500,6 @@ class Gungi {
 						this._turns_without_placing_or_capturing = 0;
 
 						break;
-				}
-
-				var source_piece =
-					typeof legal_move.src === 'string'
-						? get_top(this.board, legal_move.src)
-						: null;
-				var destination_piece = null;
-
-				if (typeof legal_move.dst === 'string') {
-					destination_piece = get_top(this.board, legal_move.dst);
-					if (destination_piece == null) {
-						destination_piece = { piece: null, tier: 1 };
-					}
 				}
 
 				this._turn_count++;
