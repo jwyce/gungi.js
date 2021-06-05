@@ -8,8 +8,10 @@ export interface MoveHistory {
 	turn: string;
 	src: Piece | string | null;
 	srcTier?: number;
+	srcPiece?: Piece | null;
 	dst: string | null;
 	dstTier?: number;
+	dstPiece?: Piece | null;
 	type: 'place' | 'ready' | 'attack' | 'move' | 'stack';
 }
 

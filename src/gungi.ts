@@ -56,6 +56,8 @@ import {
 	single_sqaure_move_gen,
 } from './utils/move_gen';
 
+var _ = require('lodash');
+
 class Gungi {
 	readonly BLACK: 'b';
 	readonly WHITE: 'w';
@@ -94,6 +96,7 @@ class Gungi {
 	private _history: MoveHistory[];
 	private _captured: StockPiece[];
 	private _turn_count: number;
+	private _turns_without_placing_or_capturing: number;
 
 	ascii: () => string;
 	get: (square: Square) => (Piece | null)[];
@@ -162,6 +165,7 @@ class Gungi {
 			b: 0,
 		};
 		this._turn_count = 0;
+		this._turns_without_placing_or_capturing = 0;
 
 		Array.prototype.push.apply(this.stockpile, init_stockpile(WHITE));
 		Array.prototype.push.apply(this.stockpile, init_stockpile(BLACK));
@@ -188,10 +192,22 @@ class Gungi {
 
 		this.get_captured = (color?: 'w' | 'b') => {
 			if (!color) {
-				return [...this._captured];
+				return [
+					..._.orderBy(
+						this._captured,
+						['piece.color', 'piece.type'],
+						['asc', 'asc']
+					),
+				];
 			}
 
-			return [...this._captured.filter((x) => x.piece.color == color)];
+			return [
+				..._.orderBy(
+					this._captured,
+					['piece.color', 'piece.type'],
+					['asc', 'asc']
+				).filter((x: StockPiece) => x.piece.color == color),
+			];
 		};
 
 		this.get = (square: Square) => {
@@ -236,11 +252,19 @@ class Gungi {
 		};
 
 		this.in_checkmate = () => {
-			return this.in_check() && this.moves().length == 0;
+			return (
+				(this.in_check() && this.moves().length == 0) ||
+				this._captured.find(
+					(x) => x.piece.color === this.turn && x.piece.type === MARSHAL
+				) !== undefined
+			);
 		};
 
 		this.in_stalemate = () => {
-			return !this.in_check() && this.moves().length == 0;
+			return (
+				(!this.in_check() && this.moves().length == 0) ||
+				this._turns_without_placing_or_capturing > 50
+			);
 		};
 
 		this.game_over = () => {
@@ -396,6 +420,7 @@ class Gungi {
 						) {
 							var piece = remove(this.board, legal_move.src);
 							put(this.board, piece, legal_move.dst);
+							this._turns_without_placing_or_capturing++;
 						}
 						break;
 					case PLACE:
@@ -410,6 +435,8 @@ class Gungi {
 								},
 								legal_move.dst
 							);
+
+							this._turns_without_placing_or_capturing = 0;
 
 							if (legal_move.src.color === BLACK) {
 								this._army_size.b++;
@@ -438,6 +465,7 @@ class Gungi {
 								} else {
 									this._captured.push({ piece, amount: 1 });
 								}
+								this._turns_without_placing_or_capturing = 0;
 							}
 
 							if (get_top(this.board, legal_move.dst) === null) {
@@ -456,6 +484,7 @@ class Gungi {
 						) {
 							var piece = remove(this.board, legal_move.src);
 							put(this.board, piece, legal_move.dst);
+							this._turns_without_placing_or_capturing++;
 						}
 						break;
 					case READY:
@@ -464,6 +493,7 @@ class Gungi {
 						} else {
 							this._drafted.w = 1;
 						}
+						this._turns_without_placing_or_capturing = 0;
 
 						break;
 				}
@@ -489,7 +519,9 @@ class Gungi {
 					dst: legal_move.dst,
 					type: legal_move.type,
 					srcTier: source_piece?.tier,
+					srcPiece: source_piece?.piece,
 					dstTier: destination_piece?.tier,
+					dstPiece: destination_piece?.piece,
 				});
 
 				if (this.phase === DRAFT) {
