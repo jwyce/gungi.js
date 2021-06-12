@@ -1,6 +1,6 @@
 {
 	"name": "gungi.js",
-	"version": "1.0.17",
+	"version": "1.0.18",
 	"description": "library which contains all the necessary logic for the strategy game from the HUNTER×HUNTER manga",
 	"main": "lib/gungi.js",
 	"types": "lib/gungi.d.ts",

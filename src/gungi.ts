@@ -470,7 +470,7 @@ class Gungi {
 									this._captured.push({ piece, amount: 1 });
 								}
 
-								if (c[0].piece.color === 'b') {
+								if (piece.color === 'b') {
 									this._army_size.b--;
 								} else {
 									this._army_size.w--;
