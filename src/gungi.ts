@@ -469,6 +469,12 @@ class Gungi {
 								} else {
 									this._captured.push({ piece, amount: 1 });
 								}
+
+								if (c[0].piece.color === 'b') {
+									this._army_size.b--;
+								} else {
+									this._army_size.w--;
+								}
 								this._turns_without_placing_or_capturing = 0;
 							}
 
