@@ -478,11 +478,9 @@ class Gungi {
 								this._turns_without_placing_or_capturing = 0;
 							}
 
-							if (get_top(this.board, legal_move.dst) === null) {
-								if (legal_move && typeof legal_move.src === 'string') {
-									var temp = remove(this.board, legal_move.src);
-									put(this.board, temp, legal_move.dst);
-								}
+							if (legal_move && typeof legal_move.src === 'string') {
+								var temp = remove(this.board, legal_move.src);
+								put(this.board, temp, legal_move.dst);
 							}
 						}
 						break;
