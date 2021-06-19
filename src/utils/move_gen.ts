@@ -482,7 +482,7 @@ export const single_sqaure_move_gen = (
 					if (src.piece.color === BLACK) {
 						if (
 							!isSquareOutOfBounds(rank - 2, file - 1) &&
-							get_top(board, rank - 1 + '-' + (file - 1))
+							!get_top(board, rank - 1 + '-' + (file - 1))
 						) {
 							probes.push({
 								rank: rank - 2,
@@ -491,7 +491,7 @@ export const single_sqaure_move_gen = (
 						}
 						if (
 							!isSquareOutOfBounds(rank - 2, file) &&
-							get_top(board, rank - 1 + '-' + file)
+							!get_top(board, rank - 1 + '-' + file)
 						) {
 							probes.push({
 								rank: rank - 2,
@@ -500,7 +500,7 @@ export const single_sqaure_move_gen = (
 						}
 						if (
 							!isSquareOutOfBounds(rank - 2, file + 1) &&
-							get_top(board, rank - 1 + '-' + (file + 1))
+							!get_top(board, rank - 1 + '-' + (file + 1))
 						) {
 							probes.push({
 								rank: rank - 2,
@@ -510,7 +510,7 @@ export const single_sqaure_move_gen = (
 					} else {
 						if (
 							!isSquareOutOfBounds(rank + 2, file - 1) &&
-							get_top(board, rank + 1 + '-' + (file - 1))
+							!get_top(board, rank + 1 + '-' + (file - 1))
 						) {
 							probes.push({
 								rank: rank + 2,
@@ -519,7 +519,7 @@ export const single_sqaure_move_gen = (
 						}
 						if (
 							!isSquareOutOfBounds(rank + 2, file) &&
-							get_top(board, rank + 1 + '-' + file)
+							!get_top(board, rank + 1 + '-' + file)
 						) {
 							probes.push({
 								rank: rank + 2,
@@ -528,7 +528,7 @@ export const single_sqaure_move_gen = (
 						}
 						if (
 							!isSquareOutOfBounds(rank + 2, file + 1) &&
-							get_top(board, rank + 1 + '-' + (file + 1))
+							!get_top(board, rank + 1 + '-' + (file + 1))
 						) {
 							probes.push({
 								rank: rank + 2,
