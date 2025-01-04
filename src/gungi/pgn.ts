@@ -23,7 +23,7 @@
 //
 // Omitting the from square and prepending 新 to the piece indicates arata - a new piece is being placed on the board (e.g. 新小(8-7-1)) . In non-beginner games,
 // all the first moves are of this form until both players say they are finished placing pieces;
-// If a player is finished, after they place their final piece in their setup, 始 is appended (e.g. 新兵(4-2-1)始).
+// If a player is finished, after they place their final piece in their setup, 終 is appended (e.g. 新兵(4-2-1)終).
 //
 // If the tactician performs a スケ (suke), they have the option to convert some or all of the enemy pieces in the tower.
 // (only if they have the piece in their hand they capture the enemy piece and replaces it with their own); this is denoted by a '%'
