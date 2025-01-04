@@ -40,4 +40,9 @@
 //
 // FEN for the starting position of a beginner game of gungi:
 // "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 w 1 0 1
-// and after the move 1.
+// and after the move 1.大(6-9-1)(5-8-2)付:
+// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1|NG|1AR1/4MI3 b 1 0 1
+// and then after 1...槍(5-2-1)(4-3-2)付:
+// "3img3/1ra3as1/d1fwd|wn|f1d/9/9/9/D1FWDWF1D/1SA1|NG|1AR1/4MI3 w 1 0 2
+// and then after 2.新忍(3-8-2)付
+// "3img3/1ra3as1/d1fwd|wn|f1d/9/9/9/D1FWDWF1D/1SA1|NG|1|AS|R1/4MI3 b 1 0 2
