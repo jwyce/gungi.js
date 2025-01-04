@@ -22,11 +22,12 @@
 // Thus 中(4-9-1)(5-8-2)付 denotes the major general stacking on a piece, and if we wanted to take the piece instead, we would write 中(4-9-1)x(5-8-1).
 //
 // Omitting the from square and prepending 新 to the piece indicates arata - a new piece is being placed on the board (e.g. 新小(8-7-1)) . In non-beginner games,
-// all the first moves are of this form until both player says they are finished placing pieces;
-// If a player is finished, after they place their final piece in their setup 始 is appended (e.g. 新兵(4-2-1)始).
+// all the first moves are of this form until both players say they are finished placing pieces;
+// If a player is finished, after they place their final piece in their setup, 始 is appended (e.g. 新兵(4-2-1)始).
 //
-// If the tactician performs a スケ (suke) they have the option to convert some or all of the enemy pieces in the tower. (if they have the piece in their hand they capture the enemy piece and replaces it with their own);
-// this is denoted by a '%' after the last coordinate followed by the piece(s) they are converting (in no particular order). Thus 謀(4-9-2)(5-8-3)%中槍 denotes the tactician
-// converting a major general and a lancer in a tower.
+// If the tactician performs a スケ (suke), they have the option to convert some or all of the enemy pieces in the tower.
+// (only if they have the piece in their hand they capture the enemy piece and replaces it with their own); this is denoted by a '%'
+// after the last coordinate followed by the piece(s) they are converting (in no particular order). Thus 謀(4-9-2)(5-8-3)%中槍 denotes
+// the tactician converting a major general and a lancer in a tower.
 //
 // If the move is a checking move, + is also appended; if the move is a checkmating move, # is appended instead.
