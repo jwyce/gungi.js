@@ -1,5 +1,25 @@
+const inverseMap = <T extends Record<string, string | number | symbol>>(
+	map: T
+): Record<T[keyof T], keyof T> =>
+	Object.entries(map).reduce(
+		(acc, [key, value]) => ({ ...acc, [value]: key }),
+		{} as Record<T[keyof T], keyof T>
+	);
+
+export type Board = (Piece | null)[][][];
+export type Piece = `${Color}${PieceType}`;
+
+export type SetupMode = 'intro' | 'beginner' | 'intermediate' | 'advanced';
+export const setupModeToCode: Record<SetupMode, number> = {
+	intro: 0,
+	beginner: 1,
+	intermediate: 2,
+	advanced: 3,
+};
+export const setupCodeToMode = inverseMap(setupModeToCode);
+
 export type Color = 'b' | 'w';
-export type Piece =
+export type PieceType =
 	| '帥'
 	| '大'
 	| '中'
@@ -14,6 +34,22 @@ export type Piece =
 	| '弓'
 	| '筒'
 	| '謀';
+
+export type PieceCode =
+	| 'm'
+	| 'g'
+	| 'i'
+	| 'j'
+	| 'w'
+	| 'n'
+	| 'r'
+	| 's'
+	| 'f'
+	| 'd'
+	| 'c'
+	| 'a'
+	| 'k'
+	| 't';
 
 export type Name =
 	| 'marshal'
@@ -31,7 +67,7 @@ export type Name =
 	| 'musketeer'
 	| 'tactician';
 
-export const piece: Record<Name, Piece> = {
+export const piece: Record<Name, PieceType> = {
 	marshal: '帥',
 	general: '大',
 	lieutenant_general: '中',
@@ -48,7 +84,35 @@ export const piece: Record<Name, Piece> = {
 	tactician: '謀',
 };
 
-export const getPieceInfo = (p: Piece) => {
+export const pieceToFenCode: Record<Name, PieceCode> = {
+	marshal: 'm',
+	general: 'g',
+	lieutenant_general: 'i',
+	major_general: 'j',
+	warrior: 'w',
+	lancer: 'n',
+	rider: 'r',
+	spy: 's',
+	fortress: 'f',
+	soldier: 'd',
+	cannon: 'c',
+	archer: 'a',
+	musketeer: 'k',
+	tactician: 't',
+};
+
+export const fenCodeToPiece = inverseMap(pieceToFenCode);
+
+export const createPieceFromFenCode = (
+	code: PieceCode | Uppercase<PieceCode>
+): Piece => {
+	const color = code === code.toLowerCase() ? 'b' : 'w';
+	const name = fenCodeToPiece[code.toLowerCase() as PieceCode];
+
+	return `${color}${piece[name]}`;
+};
+
+export const getPieceInfo = (p: PieceType) => {
 	switch (p) {
 		case piece.marshal:
 			return { symbol: p, name: 'Marshal', canonical: 'sui', count: 1 };

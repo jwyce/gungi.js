@@ -46,3 +46,79 @@
 // "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 w 1 0 2"
 // and then after 2.新忍(3-8-2)付
 // "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1|A:S|R1/4MI3 b 1 0 2"
+
+import {
+	Board,
+	Color,
+	createPieceFromFenCode,
+	Piece,
+	PieceCode,
+	setupCodeToMode,
+	SetupMode,
+} from './utils';
+
+export const INTRO_FEN =
+	'3img3/1s2n2s1/d1fwdwf1d/9/9/9/D1FWDWF1D/1S2N2S1/3GMI3 w 0 0 1';
+export const BEGINNNER_FEN =
+	'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 w 1 0 1';
+export const INTERMEDIATE_FEN = '9/9/9/9/9/9/9/9/9 w 2 0 1';
+export const ADVANCED_FEN = '9/9/9/9/9/9/9/9/9 w 3 0 1';
+
+type ParsedFEN = {
+	board: Board;
+	turn: Color;
+	mode: SetupMode;
+	draft: boolean;
+	fullmoves: number;
+};
+
+export const parseFEN = (fen: string): ParsedFEN => {
+	const [placement, turn, mode, draft, fullmoves] = fen.split(' ');
+
+	const board = placement.split('/').map((rank) => {
+		return rank.split('|').reduce(
+			(outeracc, partial) => {
+				if (partial.includes(':')) {
+					const tower = partial.split(':').map((piece) => {
+						return createPieceFromFenCode(
+							piece as PieceCode | Uppercase<PieceCode>
+						);
+					});
+					outeracc.push(tower);
+				} else {
+					const partialPieces = partial
+						.split('')
+						.reduce(
+							(acc, piece) => {
+								if (Number.isInteger(+piece)) {
+									acc = acc.concat(Array(+piece).fill(null));
+								} else {
+									acc.push(
+										createPieceFromFenCode(
+											piece as PieceCode | Uppercase<PieceCode>
+										)
+									);
+								}
+
+								return acc;
+							},
+							[] as (Piece | null)[]
+						)
+						.map((square) => [square]);
+					outeracc = outeracc.concat(partialPieces);
+				}
+
+				return outeracc;
+			},
+			[] as (Piece | null)[][]
+		);
+	});
+
+	return {
+		board,
+		turn: turn as Color,
+		mode: setupCodeToMode[+mode],
+		draft: Boolean(+draft),
+		fullmoves: +fullmoves,
+	};
+};
