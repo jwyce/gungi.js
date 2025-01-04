@@ -84,6 +84,8 @@ export const piece: Record<Name, PieceType> = {
 	tactician: '謀',
 };
 
+export const symbolToName = inverseMap(piece);
+
 export const pieceToFenCode: Record<Name, PieceCode> = {
 	marshal: 'm',
 	general: 'g',
