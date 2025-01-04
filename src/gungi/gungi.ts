@@ -1,15 +1,18 @@
 import pc from 'picocolors';
 import { Color, Piece } from './utils';
 
+type PGN = {
+	date: string;
+	white: string;
+	black: string;
+	result: string;
+	fen: string;
+	movetext: string;
+};
+
 type Options = {
-	pgn?: {
-		date: string;
-		white: string;
-		black: string;
-		result: string;
-		fen: string;
-		movetext: string;
-	};
+	pgn?: PGN;
+	fen?: string;
 };
 
 export class Gungi {
@@ -19,5 +22,12 @@ export class Gungi {
 		this._board = [];
 	}
 
-	print() {}
+	print() {
+		console.log(pc.dim(pc.yellow(1)));
+		console.log(pc.yellow(1));
+		console.log(pc.dim(pc.blue(2)));
+		console.log(pc.blue(2));
+		console.log(pc.dim(pc.green(3)));
+		console.log(pc.green(3));
+	}
 }
