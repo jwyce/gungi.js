@@ -1,16 +1,76 @@
 import pc from 'picocolors';
-import { encodeFEN, INTRO_POSITION, parseFEN } from './fen';
-import { Board, File, pieceToFenCode, Rank, symbolToName } from './utils';
+import {
+	ADVANCED_POSITION,
+	encodeFEN,
+	INTRO_POSITION,
+	ParsedFEN,
+	parseFEN,
+} from './fen';
+import {
+	Board,
+	Color,
+	File,
+	HandPiece,
+	nonDraftModes,
+	pieceToFenCode,
+	Rank,
+	SetupMode,
+	symbolToName,
+} from './utils';
 
 export class Gungi {
-	#board: Board;
+	#board!: Board;
+	#hand!: HandPiece[];
+	#turn!: Color;
+	#moveNumber!: number;
+	#drafting!: boolean;
+	#mode!: SetupMode;
+
+	#draftingRights!: Record<Color, boolean>;
+	#initPosition: string;
+
+	#initializeState({
+		board,
+		hand,
+		turn,
+		moveNumber,
+		drafting,
+		mode,
+	}: ParsedFEN) {
+		this.#board = board;
+		this.#hand = hand;
+		this.#turn = turn;
+		this.#moveNumber = moveNumber;
+		this.#drafting = drafting;
+		this.#mode = mode;
+
+		this.#draftingRights = nonDraftModes.includes(this.#mode)
+			? { w: false, b: false }
+			: { w: true, b: true };
+	}
 
 	constructor(fen?: string) {
-		this.#board = parseFEN(fen ?? INTRO_POSITION).board;
+		this.#initPosition = fen ?? INTRO_POSITION;
+		this.#initializeState(parseFEN(this.#initPosition));
 	}
 
 	board() {
 		return this.#board;
+	}
+
+	clear() {
+		this.#initializeState(parseFEN(ADVANCED_POSITION));
+	}
+
+	fen() {
+		return encodeFEN({
+			board: this.#board,
+			hand: this.#hand,
+			turn: this.#turn,
+			mode: this.#mode,
+			drafting: this.#drafting,
+			moveNumber: this.#moveNumber,
+		});
 	}
 
 	get(pos: `${File}-${Rank}`) {
@@ -21,7 +81,11 @@ export class Gungi {
 		return square;
 	}
 
-	get_top(pos: `${File}-${Rank}`) {
+	getDraftingRights(color?: Color) {
+		return color ? this.#draftingRights[color] : this.#draftingRights;
+	}
+
+	getTop(pos: `${File}-${Rank}`) {
 		const [file, rank] = pos.split('-').map(Number) as [File, Rank];
 		const square = this.#board[file - 1][9 - rank].at(-1);
 		if (!square) return null;
@@ -29,14 +93,22 @@ export class Gungi {
 		return square;
 	}
 
-	fen() {
-		return encodeFEN({
-			board: this.#board,
-			turn: 'w',
-			mode: 'intro',
-			draft: false,
-			fullmoves: 1,
-		});
+	hand(color?: Color) {
+		return color
+			? this.#hand.filter((piece) => piece.color === color)
+			: this.#hand;
+	}
+
+	inDraft() {
+		return this.#drafting;
+	}
+
+	load(fen: string) {
+		this.#initializeState(parseFEN(fen));
+	}
+
+	moveNumber() {
+		return this.#moveNumber;
 	}
 
 	print(opts?: { english?: boolean }) {
@@ -51,7 +123,7 @@ export class Gungi {
 		for (let file = 1; file <= 9; file++) {
 			s += `｜`;
 			for (let rank = 9; rank > 0; rank--) {
-				const square = this.get_top(`${file as File}-${rank as Rank}`);
+				const square = this.getTop(`${file as File}-${rank as Rank}`);
 				if (!square) {
 					s += '・';
 					continue;
@@ -72,5 +144,13 @@ export class Gungi {
 		}
 		s += `＋ーーーーーーーーー＋\n`;
 		console.log(s);
+	}
+
+	reset() {
+		this.#initializeState(parseFEN(this.#initPosition));
+	}
+
+	turn() {
+		return this.#turn;
 	}
 }

@@ -52,8 +52,10 @@
 import {
 	Board,
 	Color,
+	createHandPieceFromFenCode,
 	createPieceFromFenCode,
 	File,
+	HandPiece,
 	Piece,
 	PieceCode,
 	pieceToFenCode,
@@ -74,16 +76,18 @@ export const INTERMEDIATE_POSITION =
 export const ADVANCED_POSITION =
 	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 3 1 1';
 
-type ParsedFEN = {
+export type ParsedFEN = {
 	board: Board;
+	hand: HandPiece[];
 	turn: Color;
 	mode: SetupMode;
-	draft: boolean;
-	fullmoves: number;
+	drafting: boolean;
+	moveNumber: number;
 };
 
 export const parseFEN = (fen: string): ParsedFEN => {
-	const [placement, turn, mode, draft, fullmoves] = fen.split(' ');
+	const [placement, handpieces, turn, mode, drafting, moveNumber] =
+		fen.split(' ');
 
 	const board = placement.split('/').map((rank, y) => {
 		return rank.split('|').reduce(
@@ -130,12 +134,23 @@ export const parseFEN = (fen: string): ParsedFEN => {
 		);
 	});
 
+	const hand = handpieces.split('/').flatMap((playerHand) => {
+		const pieces: HandPiece[] = [];
+		for (let i = 0; i < playerHand.length; i += 2) {
+			const piece = playerHand[i] as PieceCode | Uppercase<PieceCode>;
+			const count = +playerHand[i + 1];
+			pieces.push(createHandPieceFromFenCode(piece, count));
+		}
+		return pieces;
+	});
+
 	return {
 		board,
+		hand,
 		turn: turn as Color,
 		mode: setupCodeToMode[+mode],
-		draft: Boolean(+draft),
-		fullmoves: +fullmoves,
+		drafting: Boolean(+drafting),
+		moveNumber: +moveNumber,
 	};
 };
 
@@ -178,5 +193,18 @@ export const encodeFEN = (fen: ParsedFEN): string => {
 		emptyCount = 0;
 	}
 
-	return `${placement.slice(0, -1)} ${fen.turn} ${setupModeToCode[fen.mode]} ${+fen.draft} ${fen.fullmoves}`;
+	let hand = '';
+	const whiteHand = fen.hand.filter((p) => p.color === 'w');
+	const blackHand = fen.hand.filter((p) => p.color === 'b');
+	whiteHand.forEach((p) => {
+		const piece = pieceToFenCode[symbolToName[p.type]];
+		hand += `${p.color === 'w' ? piece.toUpperCase() : piece}${p.count}`;
+	});
+	hand += '/';
+	blackHand.forEach((p) => {
+		const piece = pieceToFenCode[symbolToName[p.type]];
+		hand += `${p.color === 'w' ? piece.toUpperCase() : piece}${p.count}`;
+	});
+
+	return `${placement.slice(0, -1)} ${hand} ${fen.turn} ${setupModeToCode[fen.mode]} ${+fen.drafting} ${fen.moveNumber}`;
 };

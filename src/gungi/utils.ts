@@ -13,6 +13,11 @@ export type Piece = {
 	type: PieceType;
 	color: Color;
 };
+export type HandPiece = {
+	type: PieceType;
+	color: Color;
+	count: number;
+};
 
 export type SetupMode = 'intro' | 'beginner' | 'intermediate' | 'advanced';
 export const setupModeToCode: Record<SetupMode, number> = {
@@ -22,6 +27,7 @@ export const setupModeToCode: Record<SetupMode, number> = {
 	advanced: 3,
 };
 export const setupCodeToMode = inverseMap(setupModeToCode);
+export const nonDraftModes = ['intro', 'beginner'] as SetupMode[];
 
 export type Rank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 export type File = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
@@ -131,48 +137,33 @@ export const createPieceFromFenCode = (
 	};
 };
 
-export const getPieceInfo = (p: PieceType) => {
-	switch (p) {
-		case piece.marshal:
-			return { symbol: p, name: 'Marshal', canonical: 'sui', count: 1 };
-		case piece.general:
-			return { symbol: p, name: 'General', canonical: 'taishou', count: 1 };
-		case piece.lieutenant_general:
-			return {
-				symbol: p,
-				name: 'Lieutenant General',
-				canonical: 'chuujou',
-				count: 1,
-			};
-		case piece.major_general:
-			return {
-				symbol: p,
-				name: 'Major General',
-				canonical: 'shoushou',
-				count: 2,
-			};
-		case piece.warrior:
-			return { symbol: p, name: 'Warrior', canonical: 'samurai', count: 2 };
-		case piece.lancer:
-			return { symbol: p, name: 'Lancer', canonical: 'yari', count: 3 };
-		case piece.rider:
-			return { symbol: p, name: 'Rider', canonical: 'kiba', count: 2 };
-		case piece.spy:
-			return { symbol: p, name: 'Spy', canonical: 'shinobi', count: 2 };
-		case piece.fortress:
-			return { symbol: p, name: 'Fortress', canonical: 'toride', count: 2 };
-		case piece.soldier:
-			return { symbol: p, name: 'Soldier', canonical: 'hyou', count: 4 };
-		case piece.cannon:
-			return { symbol: p, name: 'Cannon', canonical: 'oodzutsu', count: 1 };
-		case piece.archer:
-			return { symbol: p, name: 'Archer', canonical: 'yumi', count: 2 };
-		case piece.musketeer:
-			return { symbol: p, name: 'Musketeer', canonical: 'tsutsu', count: 1 };
-		case piece.tactician:
-			return { symbol: p, name: 'Tactician', canonical: 'boushou', count: 1 };
-		// THIS WILL NEVER BE REACHED
-		default:
-			return { symbol: p, name: '', canonical: '', count: 0 };
-	}
+export const createHandPieceFromFenCode = (
+	code: PieceCode | Uppercase<PieceCode>,
+	count: number
+): HandPiece => {
+	const color = code === code.toLowerCase() ? 'b' : 'w';
+	const name = fenCodeToPiece[code.toLowerCase() as PieceCode];
+
+	return {
+		type: piece[name],
+		count,
+		color,
+	};
+};
+
+export const canonicalNames: Record<PieceType, string> = {
+	帥: 'sui',
+	大: 'taishou',
+	中: 'chuujou',
+	小: 'shoushou',
+	侍: 'samurai',
+	槍: 'yari',
+	馬: 'kiba',
+	忍: 'shinobi',
+	砦: 'toride',
+	兵: 'hyou',
+	砲: 'oodzutsu',
+	弓: 'yumi',
+	筒: 'tsutsu',
+	謀: 'boushou',
 };
