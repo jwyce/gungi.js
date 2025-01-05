@@ -34,7 +34,7 @@
 // 4: Setup mode:
 //    "0" means intro placement, "1" for Beginner, "2" for Intermediate, "3" for Advanced
 // 5: Drafting availability:
-//    If neither side has the ability to castle, this field uses the character "-". Otherwise, this field contains one or more letters: "w" if White can draft and 'b' if Black can draft
+//    If neither side has the ability to draft, this field uses the character "-". Otherwise, this field contains one or more letters: "w" if White can draft and 'b' if Black can draft
 // 6: Full move number:
 //    The number of the full moves. It starts at 1 and is incremented after Black's move.
 //
