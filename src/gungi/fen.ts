@@ -53,8 +53,12 @@ import {
 	createPieceFromFenCode,
 	Piece,
 	PieceCode,
+	pieceToFenCode,
+	PieceType,
 	setupCodeToMode,
 	SetupMode,
+	setupModeToCode,
+	symbolToName,
 } from './utils';
 
 export const INTRO_FEN =
@@ -121,4 +125,47 @@ export const parseFEN = (fen: string): ParsedFEN => {
 		draft: Boolean(+draft),
 		fullmoves: +fullmoves,
 	};
+};
+
+export const encodeFEN = (fen: ParsedFEN): string => {
+	let placement = '';
+	let emptyCount = 0;
+
+	for (let file = 0; file < 9; file++) {
+		for (let rank = 0; rank < 9; rank++) {
+			const square = fen.board[file][rank];
+			if (square[0] === null) {
+				emptyCount++;
+				continue;
+			}
+
+			if (emptyCount) {
+				placement += emptyCount;
+				emptyCount = 0;
+			}
+
+			if (square.length > 1) {
+				placement +=
+					'|' +
+					square
+						.map((p) => {
+							if (!p) return null;
+							const [color, type] = p.split('') as [Color, PieceType];
+							const piece = pieceToFenCode[symbolToName[type]];
+							return color === 'w' ? piece.toUpperCase() : piece;
+						})
+						.join(':') +
+					'|';
+			} else {
+				const [color, type] = square[0].split('') as [Color, PieceType];
+				const piece = pieceToFenCode[symbolToName[type]];
+				placement += color === 'w' ? piece.toUpperCase() : piece;
+			}
+		}
+
+		placement += emptyCount ? `${emptyCount}/` : '/';
+		emptyCount = 0;
+	}
+
+	return `${placement.slice(0, -1)} ${fen.turn} ${setupModeToCode[fen.mode]} ${Number(fen.draft)} ${fen.fullmoves}`;
 };

@@ -1,4 +1,4 @@
-import { Gungi } from './gungi';
+import { encodeFEN, Gungi } from './gungi';
 
 export * from './gungi';
 
@@ -7,3 +7,12 @@ const gungi = new Gungi({
 });
 
 gungi.print();
+console.log(
+	encodeFEN({
+		board: gungi.board,
+		turn: 'b',
+		mode: 'beginner',
+		draft: false,
+		fullmoves: 2,
+	})
+);
