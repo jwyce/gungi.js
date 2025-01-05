@@ -8,9 +8,11 @@ import {
 	ParsedFEN,
 	parseFEN,
 } from './fen';
+import { generateMovesForSquare } from './move_gen';
 import {
 	Board,
 	Color,
+	getTop,
 	HandPiece,
 	Piece,
 	pieceToFenCode,
@@ -90,13 +92,7 @@ export class Gungi {
 	}
 
 	getTop(square: string) {
-		const [file, rank] = square.split('-').map(Number);
-		if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
-
-		const s = this.#board[file - 1][9 - rank].at(-1);
-		if (!s) return null;
-
-		return s;
+		return getTop(square, this.#board);
 	}
 
 	hand(color?: Color) {
@@ -111,6 +107,14 @@ export class Gungi {
 
 	load(fen: string) {
 		this.#initializeState(parseFEN(fen));
+	}
+
+	moves(opts?: { square?: string }) {
+		if (opts?.square) {
+			return generateMovesForSquare(opts.square, this.#board, this.#mode);
+		} else {
+			return [];
+		}
 	}
 
 	moveNumber() {

@@ -160,3 +160,13 @@ export const canonicalNames: Record<PieceType, string> = {
 	筒: 'tsutsu',
 	謀: 'boushou',
 };
+
+export function getTop(square: string, board: (Piece | null)[][][]) {
+	const [file, rank] = square.split('-').map(Number);
+	if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
+
+	const s = board[file - 1][9 - rank].at(-1);
+	if (!s) return null;
+
+	return s;
+}
