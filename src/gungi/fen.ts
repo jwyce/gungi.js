@@ -167,5 +167,5 @@ export const encodeFEN = (fen: ParsedFEN): string => {
 		emptyCount = 0;
 	}
 
-	return `${placement.slice(0, -1)} ${fen.turn} ${setupModeToCode[fen.mode]} ${Number(fen.draft)} ${fen.fullmoves}`;
+	return `${placement.slice(0, -1)} ${fen.turn} ${setupModeToCode[fen.mode]} ${+fen.draft} ${fen.fullmoves}`;
 };
