@@ -15,7 +15,7 @@ describe('parseFEN', () => {
 
 		expect(result.turn).toBe('w');
 		expect(result.mode).toBe('intro' as SetupMode);
-		expect(result.drafting).toBe(false);
+		expect(result.drafting).toStrictEqual({ b: false, w: false });
 		expect(result.moveNumber).toBe(1);
 
 		expect(result.board).toHaveLength(9);
@@ -42,7 +42,7 @@ describe('parseFEN', () => {
 
 		expect(result.turn).toBe('w');
 		expect(result.mode).toBe('beginner' as SetupMode);
-		expect(result.drafting).toBe(false);
+		expect(result.drafting).toStrictEqual({ b: false, w: false });
 		expect(result.moveNumber).toBe(1);
 
 		expect(result.board).toHaveLength(9);
@@ -66,7 +66,7 @@ describe('parseFEN', () => {
 
 		expect(result.turn).toBe('w');
 		expect(result.mode).toBe('intermediate' as SetupMode);
-		expect(result.drafting).toBe(true);
+		expect(result.drafting).toStrictEqual({ b: true, w: true });
 		expect(result.moveNumber).toBe(1);
 
 		result.board.forEach((rank) => {
@@ -81,7 +81,7 @@ describe('parseFEN', () => {
 
 		expect(result.turn).toBe('w');
 		expect(result.mode).toBe('advanced' as SetupMode);
-		expect(result.drafting).toBe(true);
+		expect(result.drafting).toStrictEqual({ b: true, w: true });
 		expect(result.moveNumber).toBe(1);
 
 		result.board.forEach((rank) => {
@@ -92,12 +92,12 @@ describe('parseFEN', () => {
 	});
 
 	it('should handle towers and empty squares correctly', () => {
-		const fen = '3img3/1sa|a:g:s|1s3/9/9/9/9/9/9/9 d2/M1N3 b 3 0 2';
+		const fen = '3img3/1sa|a:g:s|1s3/9/9/9/9/9/9/9 d2/M1N3 b 3 b 2';
 		const result = parseFEN(fen);
 
 		expect(result.turn).toBe('b');
 		expect(result.mode).toBe('advanced' as SetupMode);
-		expect(result.drafting).toBe(false);
+		expect(result.drafting).toStrictEqual({ b: true, w: false });
 		expect(result.moveNumber).toBe(2);
 
 		const tower = result.board[1][3];
@@ -111,12 +111,12 @@ describe('parseFEN', () => {
 	});
 
 	it('should handle towers placed right next to each other correctly', () => {
-		const fen = '3img3/1sa|a:g:s|d:w|k:n|r:w|2/9/9/9/9/9/9/9 d2/M1N3 w 1 0 3';
+		const fen = '3img3/1sa|a:g:s|d:w|k:n|r:w|2/9/9/9/9/9/9/9 d2/M1N3 w 1 w 3';
 		const result = parseFEN(fen);
 
 		expect(result.turn).toBe('w');
 		expect(result.mode).toBe('beginner' as SetupMode);
-		expect(result.drafting).toBe(false);
+		expect(result.drafting).toStrictEqual({ b: false, w: true });
 		expect(result.moveNumber).toBe(3);
 
 		// Check the first tower
@@ -189,7 +189,7 @@ describe('parseFEN', () => {
 	// Round-trip test for FEN encoding and decoding
 	it('should correctly encode and decode FEN strings symmetrically', () => {
 		const fen =
-			'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 1';
+			'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 - 1';
 		const parsed = parseFEN(fen);
 		const encoded = encodeFEN(parsed);
 

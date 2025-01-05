@@ -1,13 +1,6 @@
 // Portable Game Notation (PGN) parser and serializer for Gungi games.
 // Read more about PGN for chess: https://en.wikipedia.org/wiki/Portable_Game_Notation
 //
-// PGN data for archival storage tag pairs
-// Date	  | Starting date of the game, in YYYY.MM.DD form. ?? is used for unknown values.
-// White  |	Player of the white pieces, in Lastname, Firstname format.
-// Black  |	Player of the black pieces, same format as White.
-// Result |	Result of the game. It is recorded as White score, dash, then Black score, or * (other, e.g., the game is ongoing).
-// FEN    |	The initial position of the chessboard, in Forsyth–Edwards Notation. This is used to record partial games (starting at some initial position).
-//
 // Movetext
 // The movetext describes the actual moves of the game. This includes move number indicators (numbers followed by either one or three periods;
 // one if the next move is White's move, three if the next move is Black's move) and movetext in Standard Algebraic Notation (SAN).

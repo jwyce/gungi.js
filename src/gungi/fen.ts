@@ -33,21 +33,21 @@
 //    "w" means that White is to move; "b" means that Black is to move.
 // 4: Setup mode:
 //    "0" means intro placement, "1" for Beginner, "2" for Intermediate, "3" for Advanced
-// 5: Drafting:
-//    "0" means no longer drafting, "1" means in drafting stage
+// 5: Drafting availability:
+//    If neither side has the ability to castle, this field uses the character "-". Otherwise, this field contains one or more letters: "w" if White can draft and 'b' if Black can draft
 // 6: Full move number:
 //    The number of the full moves. It starts at 1 and is incremented after Black's move.
 //
 // Examples
 //
 // FEN for the starting position of a beginner game of gungi:
-// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 1"
+// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 - 1"
 // and after the move 1.大(6-9-1)(5-8-2)付:
-// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 b 1 0 1"
+// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 b 1 - 1"
 // and then after 1...槍(5-2-1)(4-3-2)付:
-// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 2"
+// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 w 1 - 2"
 // and then after 2.新忍(3-8-2)付
-// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1|A:S|R1/4MI3 J2N2R1D1/j2n2s1r1d1 b 1 0 2"
+// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1|A:S|R1/4MI3 J2N2R1D1/j2n2s1r1d1 b 1 - 2"
 
 import {
 	Board,
@@ -65,20 +65,20 @@ import {
 } from './utils';
 
 export const INTRO_POSITION =
-	'3img3/1s2n2s1/d1fwdwf1d/9/9/9/D1FWDWF1D/1S2N2S1/3GMI3 J2N2R2D1/j2n2r2d1 w 0 0 1';
+	'3img3/1s2n2s1/d1fwdwf1d/9/9/9/D1FWDWF1D/1S2N2S1/3GMI3 J2N2R2D1/j2n2r2d1 w 0 - 1';
 export const BEGINNNER_POSITION =
-	'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 1';
+	'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 - 1';
 export const INTERMEDIATE_POSITION =
-	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 2 1 1';
+	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 2 wb 1';
 export const ADVANCED_POSITION =
-	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 3 1 1';
+	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 3 wb 1';
 
 export type ParsedFEN = {
 	board: Board;
 	hand: HandPiece[];
 	turn: Color;
 	mode: SetupMode;
-	drafting: boolean;
+	drafting: Record<Color, boolean>;
 	moveNumber: number;
 };
 
@@ -142,7 +142,10 @@ export const parseFEN = (fen: string): ParsedFEN => {
 		hand,
 		turn: turn as Color,
 		mode: setupCodeToMode[+mode],
-		drafting: Boolean(+drafting),
+		drafting: {
+			w: drafting.includes('w'),
+			b: drafting.includes('b'),
+		},
 		moveNumber: +moveNumber,
 	};
 };
@@ -199,5 +202,9 @@ export const encodeFEN = (fen: ParsedFEN): string => {
 		hand += `${p.color === 'w' ? piece.toUpperCase() : piece}${p.count}`;
 	});
 
-	return `${placement.slice(0, -1)} ${hand} ${fen.turn} ${setupModeToCode[fen.mode]} ${+fen.drafting} ${fen.moveNumber}`;
+	const draftKeys = Object.keys(fen.drafting).filter(
+		(key) => fen.drafting[key as Color]
+	);
+
+	return `${placement.slice(0, -1)} ${hand} ${fen.turn} ${setupModeToCode[fen.mode]} ${draftKeys.length > 0 ? draftKeys.join('') : '-'} ${fen.moveNumber}`;
 };

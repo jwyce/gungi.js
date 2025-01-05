@@ -27,7 +27,6 @@ export const setupModeToCode: Record<SetupMode, number> = {
 	advanced: 3,
 };
 export const setupCodeToMode = inverseMap(setupModeToCode);
-export const nonDraftModes = ['intro', 'beginner'] as SetupMode[];
 
 export type Color = 'b' | 'w';
 export type PieceType =

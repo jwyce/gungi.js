@@ -12,7 +12,6 @@ import {
 	Board,
 	Color,
 	HandPiece,
-	nonDraftModes,
 	Piece,
 	pieceToFenCode,
 	SetupMode,
@@ -31,10 +30,9 @@ export class Gungi {
 	#hand!: HandPiece[];
 	#turn!: Color;
 	#moveNumber!: number;
-	#drafting!: boolean;
+	#drafting!: Record<Color, boolean>;
 	#mode!: SetupMode;
 
-	#draftingRights!: Record<Color, boolean>;
 	#initPosition: string;
 
 	#initializeState({
@@ -51,14 +49,9 @@ export class Gungi {
 		this.#moveNumber = moveNumber;
 		this.#drafting = drafting;
 		this.#mode = mode;
-
-		this.#draftingRights = nonDraftModes.includes(this.#mode)
-			? { w: false, b: false }
-			: { w: true, b: true };
 	}
 
 	constructor(fen?: string) {
-		console.log(fen);
 		this.#initPosition = fen ?? INTRO_POSITION;
 		this.#initializeState(parseFEN(this.#initPosition));
 	}
@@ -93,7 +86,7 @@ export class Gungi {
 	}
 
 	getDraftingRights(color?: Color) {
-		return color ? this.#draftingRights[color] : this.#draftingRights;
+		return color ? this.#drafting[color] : this.#drafting;
 	}
 
 	getTop(square: string) {
@@ -113,7 +106,7 @@ export class Gungi {
 	}
 
 	inDraft() {
-		return this.#drafting;
+		return this.#drafting.b || this.#drafting.w;
 	}
 
 	load(fen: string) {
