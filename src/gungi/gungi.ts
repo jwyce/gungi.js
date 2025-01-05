@@ -1,7 +1,9 @@
 import pc from 'picocolors';
 import {
 	ADVANCED_POSITION,
+	BEGINNNER_POSITION,
 	encodeFEN,
+	INTERMEDIATE_POSITION,
 	INTRO_POSITION,
 	ParsedFEN,
 	parseFEN,
@@ -17,6 +19,13 @@ import {
 	SetupMode,
 	symbolToName,
 } from './utils';
+
+export {
+	INTRO_POSITION,
+	BEGINNNER_POSITION,
+	INTERMEDIATE_POSITION,
+	ADVANCED_POSITION,
+};
 
 export class Gungi {
 	#board!: Board;
@@ -50,6 +59,7 @@ export class Gungi {
 	}
 
 	constructor(fen?: string) {
+		console.log(fen);
 		this.#initPosition = fen ?? INTRO_POSITION;
 		this.#initializeState(parseFEN(this.#initPosition));
 	}
