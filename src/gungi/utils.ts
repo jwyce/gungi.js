@@ -8,8 +8,8 @@ const inverseMap = <T extends Record<string, string | number | symbol>>(
 
 export type Board = (Piece | null)[][][];
 export type Piece = {
-	square: Square;
-	tier: Tier;
+	square: string;
+	tier: number;
 	type: PieceType;
 	color: Color;
 };
@@ -28,12 +28,6 @@ export const setupModeToCode: Record<SetupMode, number> = {
 };
 export const setupCodeToMode = inverseMap(setupModeToCode);
 export const nonDraftModes = ['intro', 'beginner'] as SetupMode[];
-
-export type Rank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-export type File = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
-export type Tier = 1 | 2 | 3;
-export type Square = `${File}-${Rank}`;
-export type Positon = `${Square}-${Tier}`;
 
 export type Color = 'b' | 'w';
 export type PieceType =
@@ -124,7 +118,7 @@ export const fenCodeToPiece = inverseMap(pieceToFenCode);
 
 export const createPieceFromFenCode = (
 	code: PieceCode | Uppercase<PieceCode>,
-	[y, x, z]: [File, Rank, Tier]
+	[y, x, z]: [number, number, number]
 ): Piece => {
 	const color = code === code.toLowerCase() ? 'b' : 'w';
 	const name = fenCodeToPiece[code.toLowerCase() as PieceCode];

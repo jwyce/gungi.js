@@ -11,11 +11,10 @@ import {
 import {
 	Board,
 	Color,
-	File,
 	HandPiece,
 	nonDraftModes,
+	Piece,
 	pieceToFenCode,
-	Rank,
 	SetupMode,
 	symbolToName,
 } from './utils';
@@ -83,20 +82,24 @@ export class Gungi {
 		});
 	}
 
-	get(pos: `${File}-${Rank}`) {
-		const [file, rank] = pos.split('-').map(Number) as [File, Rank];
-		const square = this.#board[file - 1][9 - rank];
-		if (!square) return null;
+	get(pos: string) {
+		const [file, rank] = pos.split('-').map(Number);
+		if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
 
-		return square;
+		const square = this.#board[file - 1][9 - rank];
+		if (!square[0]) return null;
+
+		return square as Piece[];
 	}
 
 	getDraftingRights(color?: Color) {
 		return color ? this.#draftingRights[color] : this.#draftingRights;
 	}
 
-	getTop(pos: `${File}-${Rank}`) {
-		const [file, rank] = pos.split('-').map(Number) as [File, Rank];
+	getTop(pos: string) {
+		const [file, rank] = pos.split('-').map(Number);
+		if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
+
 		const square = this.#board[file - 1][9 - rank].at(-1);
 		if (!square) return null;
 
@@ -133,7 +136,7 @@ export class Gungi {
 		for (let file = 1; file <= 9; file++) {
 			s += `｜`;
 			for (let rank = 9; rank > 0; rank--) {
-				const square = this.getTop(`${file as File}-${rank as Rank}`);
+				const square = this.getTop(`${file}-${rank}`);
 				if (!square) {
 					s += '・';
 					continue;

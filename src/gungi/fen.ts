@@ -54,17 +54,14 @@ import {
 	Color,
 	createHandPieceFromFenCode,
 	createPieceFromFenCode,
-	File,
 	HandPiece,
 	Piece,
 	PieceCode,
 	pieceToFenCode,
-	Rank,
 	setupCodeToMode,
 	SetupMode,
 	setupModeToCode,
 	symbolToName,
-	Tier,
 } from './utils';
 
 export const INTRO_POSITION =
@@ -96,7 +93,7 @@ export const parseFEN = (fen: string): ParsedFEN => {
 					const tower = partial.split(':').map((piece, z) => {
 						return createPieceFromFenCode(
 							piece as PieceCode | Uppercase<PieceCode>,
-							[y + 1, 9 - outeracc.length, z + 1] as [File, Rank, Tier]
+							[y + 1, 9 - outeracc.length, z + 1]
 						);
 					});
 					outeracc.push(tower);
@@ -111,11 +108,7 @@ export const parseFEN = (fen: string): ParsedFEN => {
 									acc.push(
 										createPieceFromFenCode(
 											piece as PieceCode | Uppercase<PieceCode>,
-											[y + 1, 9 - outeracc.length - acc.length, 1] as [
-												File,
-												Rank,
-												Tier,
-											]
+											[y + 1, 9 - outeracc.length - acc.length, 1]
 										)
 									);
 								}
