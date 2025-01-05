@@ -82,28 +82,28 @@ export class Gungi {
 		});
 	}
 
-	get(pos: string) {
-		const [file, rank] = pos.split('-').map(Number);
+	get(square: string) {
+		const [file, rank] = square.split('-').map(Number);
 		if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
 
-		const square = this.#board[file - 1][9 - rank];
-		if (!square[0]) return null;
+		const s = this.#board[file - 1][9 - rank];
+		if (!s[0]) return null;
 
-		return square as Piece[];
+		return s as Piece[];
 	}
 
 	getDraftingRights(color?: Color) {
 		return color ? this.#draftingRights[color] : this.#draftingRights;
 	}
 
-	getTop(pos: string) {
-		const [file, rank] = pos.split('-').map(Number);
+	getTop(square: string) {
+		const [file, rank] = square.split('-').map(Number);
 		if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
 
-		const square = this.#board[file - 1][9 - rank].at(-1);
-		if (!square) return null;
+		const s = this.#board[file - 1][9 - rank].at(-1);
+		if (!s) return null;
 
-		return square;
+		return s;
 	}
 
 	hand(color?: Color) {
