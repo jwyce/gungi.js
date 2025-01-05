@@ -1,43 +1,42 @@
 import pc from 'picocolors';
-import { BEGINNNER_FEN, parseFEN } from './fen';
-import { Board, Color, pieceToFenCode, PieceType, symbolToName } from './utils';
-
-type PGN = {
-	date: string;
-	white: string;
-	black: string;
-	result: string;
-	fen: string;
-	movetext: string;
-};
-
-type Options = {
-	pgn?: PGN;
-	fen?: string;
-};
+import { encodeFEN, INTRO_POSITION, parseFEN } from './fen';
+import { Board, File, pieceToFenCode, Rank, symbolToName } from './utils';
 
 export class Gungi {
 	#board: Board;
 
-	constructor(opts?: Options) {
-		this.#board = parseFEN(opts?.fen ?? BEGINNNER_FEN).board;
+	constructor(fen?: string) {
+		this.#board = parseFEN(fen ?? INTRO_POSITION).board;
 	}
 
-	get board() {
+	board() {
 		return this.#board;
 	}
 
-	get_top(rank: number, file: number) {
+	get(pos: `${File}-${Rank}`) {
+		const [file, rank] = pos.split('-').map(Number) as [File, Rank];
+		const square = this.#board[file - 1][9 - rank];
+		if (!square) return null;
+
+		return square;
+	}
+
+	get_top(pos: `${File}-${Rank}`) {
+		const [file, rank] = pos.split('-').map(Number) as [File, Rank];
 		const square = this.#board[file - 1][9 - rank].at(-1);
 		if (!square) return null;
 
-		const [color, piece] = square.split('') as [Color, PieceType];
+		return square;
+	}
 
-		return {
-			color,
-			piece,
-			tier: this.#board[file - 1][9 - rank].length,
-		};
+	fen() {
+		return encodeFEN({
+			board: this.#board,
+			turn: 'w',
+			mode: 'intro',
+			draft: false,
+			fullmoves: 1,
+		});
 	}
 
 	print(opts?: { english?: boolean }) {
@@ -52,19 +51,19 @@ export class Gungi {
 		for (let file = 1; file <= 9; file++) {
 			s += `｜`;
 			for (let rank = 9; rank > 0; rank--) {
-				const square = this.get_top(rank, file);
+				const square = this.get_top(`${file as File}-${rank as Rank}`);
 				if (!square) {
 					s += '・';
 					continue;
 				}
 
-				const code = pieceToFenCode[symbolToName[square.piece]];
+				const code = pieceToFenCode[symbolToName[square.type]];
 				const en = square.color === 'w' ? code.toUpperCase() : code;
 
 				const coloredPiece = tierToColor[square.tier as 1 | 2 | 3](
 					opts?.english
 						? String.fromCharCode(en.charCodeAt(0) + 0xfee0)
-						: square.piece
+						: square.type
 				);
 
 				s += square.color === 'w' ? coloredPiece : pc.dim(coloredPiece);

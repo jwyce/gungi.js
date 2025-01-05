@@ -7,7 +7,12 @@ const inverseMap = <T extends Record<string, string | number | symbol>>(
 	);
 
 export type Board = (Piece | null)[][][];
-export type Piece = `${Color}${PieceType}`;
+export type Piece = {
+	square: Square;
+	tier: Tier;
+	type: PieceType;
+	color: Color;
+};
 
 export type SetupMode = 'intro' | 'beginner' | 'intermediate' | 'advanced';
 export const setupModeToCode: Record<SetupMode, number> = {
@@ -17,6 +22,12 @@ export const setupModeToCode: Record<SetupMode, number> = {
 	advanced: 3,
 };
 export const setupCodeToMode = inverseMap(setupModeToCode);
+
+export type Rank = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export type File = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
+export type Tier = 1 | 2 | 3;
+export type Square = `${File}-${Rank}`;
+export type Positon = `${Square}-${Tier}`;
 
 export type Color = 'b' | 'w';
 export type PieceType =
@@ -106,12 +117,18 @@ export const pieceToFenCode: Record<Name, PieceCode> = {
 export const fenCodeToPiece = inverseMap(pieceToFenCode);
 
 export const createPieceFromFenCode = (
-	code: PieceCode | Uppercase<PieceCode>
+	code: PieceCode | Uppercase<PieceCode>,
+	[y, x, z]: [File, Rank, Tier]
 ): Piece => {
 	const color = code === code.toLowerCase() ? 'b' : 'w';
 	const name = fenCodeToPiece[code.toLowerCase() as PieceCode];
 
-	return `${color}${piece[name]}`;
+	return {
+		square: `${y}-${x}`,
+		tier: z,
+		type: piece[name],
+		color,
+	};
 };
 
 export const getPieceInfo = (p: PieceType) => {

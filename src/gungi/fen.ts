@@ -27,46 +27,52 @@
 //    while white pieces use uppercase ("MGLJWCRSFDNAKT")
 //
 //    A set of one or more consecutive empty squares within a rank is denoted by a digit from "1" to "9", corresponding to the number of squares.
-// 2: Active player:
+// 2: Hand piece data:
+//    Each piece in hand is represented by a single character (see above) followed by the number of that piece in hand; white's hand piecs come first followed by black's separated by a '/'.
+// 3: Active player:
 //    "w" means that White is to move; "b" means that Black is to move.
-// 3: Setup mode:
+// 4: Setup mode:
 //    "0" means intro placement, "1" for Beginner, "2" for Intermediate, "3" for Advanced
-// 4: Drafting:
+// 5: Drafting:
 //    "0" means no longer drafting, "1" means in drafting stage
-// 5: Full move number:
+// 6: Full move number:
 //    The number of the full moves. It starts at 1 and is incremented after Black's move.
 //
 // Examples
 //
 // FEN for the starting position of a beginner game of gungi:
-// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 w 1 0 1"
+// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 1"
 // and after the move 1.大(6-9-1)(5-8-2)付:
-// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 b 1 0 1"
+// "3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 b 1 0 1"
 // and then after 1...槍(5-2-1)(4-3-2)付:
-// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 w 1 0 2"
+// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 2"
 // and then after 2.新忍(3-8-2)付
-// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1|A:S|R1/4MI3 b 1 0 2"
+// "3img3/1ra3as1/d1fwd|w:n|f1d/9/9/9/D1FWDWF1D/1SA1|N:G|1|A:S|R1/4MI3 J2N2R1D1/j2n2s1r1d1 b 1 0 2"
 
 import {
 	Board,
 	Color,
 	createPieceFromFenCode,
+	File,
 	Piece,
 	PieceCode,
 	pieceToFenCode,
-	PieceType,
+	Rank,
 	setupCodeToMode,
 	SetupMode,
 	setupModeToCode,
 	symbolToName,
+	Tier,
 } from './utils';
 
-export const INTRO_FEN =
-	'3img3/1s2n2s1/d1fwdwf1d/9/9/9/D1FWDWF1D/1S2N2S1/3GMI3 w 0 0 1';
-export const BEGINNNER_FEN =
-	'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 w 1 0 1';
-export const INTERMEDIATE_FEN = '9/9/9/9/9/9/9/9/9 w 2 0 1';
-export const ADVANCED_FEN = '9/9/9/9/9/9/9/9/9 w 3 0 1';
+export const INTRO_POSITION =
+	'3img3/1s2n2s1/d1fwdwf1d/9/9/9/D1FWDWF1D/1S2N2S1/3GMI3 J2N2R2D1/j2n2r2d1 w 0 0 1';
+export const BEGINNNER_POSITION =
+	'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 1';
+export const INTERMEDIATE_POSITION =
+	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 2 1 1';
+export const ADVANCED_POSITION =
+	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 3 1 1';
 
 type ParsedFEN = {
 	board: Board;
@@ -79,13 +85,14 @@ type ParsedFEN = {
 export const parseFEN = (fen: string): ParsedFEN => {
 	const [placement, turn, mode, draft, fullmoves] = fen.split(' ');
 
-	const board = placement.split('/').map((rank) => {
+	const board = placement.split('/').map((rank, y) => {
 		return rank.split('|').reduce(
 			(outeracc, partial) => {
 				if (partial.includes(':')) {
-					const tower = partial.split(':').map((piece) => {
+					const tower = partial.split(':').map((piece, z) => {
 						return createPieceFromFenCode(
-							piece as PieceCode | Uppercase<PieceCode>
+							piece as PieceCode | Uppercase<PieceCode>,
+							[y + 1, 9 - outeracc.length, z + 1] as [File, Rank, Tier]
 						);
 					});
 					outeracc.push(tower);
@@ -99,7 +106,12 @@ export const parseFEN = (fen: string): ParsedFEN => {
 								} else {
 									acc.push(
 										createPieceFromFenCode(
-											piece as PieceCode | Uppercase<PieceCode>
+											piece as PieceCode | Uppercase<PieceCode>,
+											[y + 1, 9 - outeracc.length - acc.length, 1] as [
+												File,
+												Rank,
+												Tier,
+											]
 										)
 									);
 								}
@@ -150,14 +162,13 @@ export const encodeFEN = (fen: ParsedFEN): string => {
 					square
 						.map((p) => {
 							if (!p) return null;
-							const [color, type] = p.split('') as [Color, PieceType];
-							const piece = pieceToFenCode[symbolToName[type]];
-							return color === 'w' ? piece.toUpperCase() : piece;
+							const piece = pieceToFenCode[symbolToName[p.type]];
+							return p.color === 'w' ? piece.toUpperCase() : piece;
 						})
 						.join(':') +
 					'|';
 			} else {
-				const [color, type] = square[0].split('') as [Color, PieceType];
+				const { type, color } = square[0];
 				const piece = pieceToFenCode[symbolToName[type]];
 				placement += color === 'w' ? piece.toUpperCase() : piece;
 			}
