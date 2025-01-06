@@ -19,8 +19,8 @@
 // If a player is finished, after they place their final piece in their setup, 終 is appended (e.g. 新兵(4-2-1)終).
 //
 // If the tactician performs a ツケ (tsuke), they have the option to convert some or all of the enemy pieces in the tower.
-// (only if they have the piece in their hand they capture the enemy piece and replaces it with their own); this is denoted by a '%'
-// after the last coordinate followed by the piece(s) they are converting (in no particular order). Thus 謀(4-9-2)(5-8-3)付%中槍 denotes
+// (only if they have the piece in their hand they capture the enemy piece and replaces it with their own); this is denoted by a '返'
+// after the last coordinate followed by the piece(s) they are converting (in no particular order). Thus 謀(4-9-2)(5-8-3)返中槍 denotes
 // the tactician converting a major general and a lancer in a tower.
 //
 // If the move captures the enemy marshal, "勝" is appended and the game is over.
