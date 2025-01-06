@@ -11,7 +11,7 @@
 //
 // The algebraic name of any square is a little different from algebraic chess notation; from white's perspective,
 // the rightmost square farthest from white is (1-1-1), the leftmost square farthest from the white is (9-1-1), and the leftmost (from white's perspective) square closest to white's side is (9-9-1).
-// the coordinates are given in the from (x-y-z) where z can be (1, 2, or 3) depending on the height of the tower. If performing a stack ツケ (tsuke) then 付 is appended.
+// the coordinates are given in the from (rank-file-tier) where tier can be (1, 2, or 3) depending on the height of the tower. If performing a stack ツケ (tsuke) then 付 is appended.
 // Thus 中(4-9-1)(5-8-2)付 denotes the major general stacking on a piece, and if we wanted to take the piece instead, we would write 中(4-9-1)x(5-8-1).
 //
 // Omitting the from square and prepending 新 to the piece indicates arata - a new piece is being placed on the board (e.g. 新小(8-7-1)) . In non-beginner games,
