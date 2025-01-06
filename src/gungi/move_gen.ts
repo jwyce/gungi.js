@@ -45,7 +45,6 @@ function getAvailableSquares(
 	const [py, px] = origin;
 	const [dy, dx] = dir;
 	const originPiece = getTop(`${py}-${px}`, board)!;
-	console.log({ originPiece });
 
 	const availableSquares: string[] = [];
 
@@ -55,21 +54,24 @@ function getAvailableSquares(
 		reverse.x -= dx;
 		reverse.y -= dy;
 		const piece = getTop(`${reverse.y}-${reverse.x}`, board);
-		console.log('reverse', { piece });
 		if (piece && piece.tier > originPiece.tier) {
 			return [];
 		}
+
+		const side = originPiece.color === 'b' ? -1 : 1;
+		const below = getTop(`${reverse.y + side}-${reverse.x}`, board);
+
+		if (below && below.square === `${py}-${px}`) break;
+		if (!piece) break;
 	}
 
 	// then probe in the forward direction to see if there are any pieces in the way
 	const forward = { x, y };
 	let step = 0;
 	while (step < length) {
-		console.log({ forward });
 		if (forward.x < 1 || forward.x > 9 || forward.y < 1 || forward.y > 9) break;
 
 		const piece = getTop(`${forward.y}-${forward.x}`, board);
-		console.log('forward', { piece });
 		if (piece && piece.tier > originPiece.tier) break;
 
 		availableSquares.push(`${forward.y}-${forward.x}`);
@@ -98,23 +100,22 @@ export function generateMovesForSquare(
 	if (!piece) return [];
 
 	const [py, px] = square.split('-').map(Number);
-	console.log('square', py, px);
 
 	const probes = pieceProbes[piece.type];
-	console.log({ probes });
 	const squares = probes.flatMap((probe, i) => {
 		const pval = typeof probe === 'number' ? probe : probe[0];
 		const pcarry = typeof probe === 'number' ? 1 : probe[1];
-		console.log({ pval, pcarry });
 		if (pval < 1) return [];
 
-		const [dy, dx] = dirs[i];
-		console.log('dir', dy, dx);
+		let [dy, dx] = dirs[i];
+		if (piece.color === 'b') {
+			dy *= -1;
+			dx *= -1;
+		}
+
 		const [y, x] =
-			pval === Infinity ? [py + dy, px + dx] : [py + pval * dy, px + pval * dx];
-		console.log('start', y, x);
-		const length = piece.tier + pcarry - 1;
-		console.log({ length });
+			pval === Infinity ? [py + dy, px + dx] : [py + pval * dy, px + dx];
+		const length = pval === Infinity ? Infinity : piece.tier + pcarry - 1;
 
 		return getAvailableSquares([dy, dx], [y, x], [py, px], length, board);
 	});
