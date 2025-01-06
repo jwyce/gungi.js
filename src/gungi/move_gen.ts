@@ -62,7 +62,6 @@ function getAvailableSquares(
 		const below = getTop(`${reverse.y + side}-${reverse.x}`, board);
 
 		if (below && below.square === `${py}-${px}`) break;
-		if (!piece) break;
 	}
 
 	// then probe in the forward direction to see if there are any pieces in the way
