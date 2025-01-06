@@ -20,7 +20,7 @@
 //
 // If the tactician performs a ツケ (tsuke), they have the option to convert some or all of the enemy pieces in the tower.
 // (only if they have the piece in their hand they capture the enemy piece and replaces it with their own); this is denoted by a '%'
-// after the last coordinate followed by the piece(s) they are converting (in no particular order). Thus 謀(4-9-2)(5-8-3)%中槍 denotes
+// after the last coordinate followed by the piece(s) they are converting (in no particular order). Thus 謀(4-9-2)(5-8-3)付%中槍 denotes
 // the tactician converting a major general and a lancer in a tower.
 //
 // If the move is a checking move, + is also appended; if the move is a checkmating move, # is appended instead.
