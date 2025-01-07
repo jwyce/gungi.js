@@ -6,6 +6,7 @@ import {
 	INTERMEDIATE_POSITION,
 	INTRO_POSITION,
 	parseFEN,
+	validateFen,
 } from '../src/gungi/fen';
 import { piece, SetupMode } from '../src/gungi/utils';
 
@@ -186,6 +187,71 @@ describe('parseFEN', () => {
 		});
 	});
 
+	it('should handle empty hands correctly', () => {
+		const fen = '9/9/9/9/9/9/9/9/9 -/- w 0 - 1';
+		const result = parseFEN(fen);
+
+		expect(result.hand).toHaveLength(0);
+		expect(result.turn).toBe('w');
+		expect(result.mode).toBe('intro' as SetupMode);
+		expect(result.drafting).toStrictEqual({ b: false, w: false });
+		expect(result.moveNumber).toBe(1);
+	});
+
+	it('should correctly parse when only white has an empty hand', () => {
+		const fen = '3img3/9/9/9/9/9/9/9/9 -/m1r3 b 1 - 1';
+		const result = parseFEN(fen);
+
+		expect(result.turn).toBe('b');
+		expect(result.mode).toBe('beginner' as SetupMode);
+		expect(result.drafting).toStrictEqual({ b: false, w: false });
+		expect(result.moveNumber).toBe(1);
+
+		// Verify the board structure
+		expect(result.board).toHaveLength(9);
+		result.board.forEach((rank) => expect(rank).toHaveLength(9));
+
+		// Verify hand pieces
+		expect(result.hand).toHaveLength(2); // Only Black has pieces
+		expect(result.hand).toContainEqual({
+			color: 'b',
+			type: piece.marshal,
+			count: 1,
+		});
+		expect(result.hand).toContainEqual({
+			color: 'b',
+			type: piece.rider,
+			count: 3,
+		});
+	});
+
+	it('should correctly parse when only black has an empty hand', () => {
+		const fen = '3img3/9/9/9/9/9/9/9/9 M1D3/- w 1 - 1';
+		const result = parseFEN(fen);
+
+		expect(result.turn).toBe('w');
+		expect(result.mode).toBe('beginner' as SetupMode);
+		expect(result.drafting).toStrictEqual({ b: false, w: false });
+		expect(result.moveNumber).toBe(1);
+
+		// Verify the board structure
+		expect(result.board).toHaveLength(9);
+		result.board.forEach((rank) => expect(rank).toHaveLength(9));
+
+		// Verify hand pieces
+		expect(result.hand).toHaveLength(2); // Only White has pieces
+		expect(result.hand).toContainEqual({
+			color: 'w',
+			type: piece.marshal,
+			count: 1,
+		});
+		expect(result.hand).toContainEqual({
+			color: 'w',
+			type: piece.soldier,
+			count: 3,
+		});
+	});
+
 	// Round-trip test for FEN encoding and decoding
 	it('should correctly encode and decode FEN strings symmetrically', () => {
 		const fen =
@@ -194,5 +260,86 @@ describe('parseFEN', () => {
 		const encoded = encodeFEN(parsed);
 
 		expect(encoded).toBe(fen);
+	});
+});
+
+describe('validateFen', () => {
+	it('should validate a correct FEN string', () => {
+		const result = validateFen(BEGINNNER_POSITION);
+		expect(result.ok).toBe(true);
+	});
+
+	it('should detect incorrect number of fields', () => {
+		const fen = '3img3/1ra1n1as1/d1fwdwf1d w 1 -';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('expected 6 fields');
+	});
+
+	it('should detect invalid piece positions', () => {
+		const fen =
+			'3img3/1ra1n1xas1/d1fwdwf1d/9/9/9/9/9/9 J2N2R1D1/j2n2r2d1 w 1 - 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('invalid piece');
+	});
+
+	it('should detect invalid rank count', () => {
+		const fen =
+			'3img3/1ra1n1xas1/d1fwdwf1d/9/9/9/9/9 J2N2R1D1/j2n2r2d1 w 1 - 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('expected 9 ranks');
+	});
+
+	it('should detect invalid file count', () => {
+		const fen =
+			'3img3/1ra1n1a1/d1fwdwf1d/9/9/9/9/9/9 J2N2R1D1/j2n2r2d1 w 1 - 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('expected 9 squares');
+	});
+
+	it('should detect invalid tower size', () => {
+		const fen =
+			'3img3/1ra1n1as1/d1fw|d:f:g:c|wf1d/9/9/9/9/9/9 J2N2R1D1/j2n2r2d1 w 1 - 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('tower size');
+	});
+
+	it('should detect invalid hand pieces', () => {
+		const fen = '9/9/9/9/9/9/9/9/9 J2X2R1D1/j2n2r2d1 w 1 - 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('invalid piece');
+	});
+
+	it('should detect invalid active player', () => {
+		const fen = '9/9/9/9/9/9/9/9/9 -/- x 0 - 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain("expected 'w' or 'b'");
+	});
+
+	it('should detect invalid setup mode', () => {
+		const fen = '9/9/9/9/9/9/9/9/9 -/- w 4 - 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain("expected '0', '1', '2', or '3'");
+	});
+
+	it('should detect invalid drafting field', () => {
+		const fen = '9/9/9/9/9/9/9/9/9 -/- w 0 x 1';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('(drafting availability) is invalid');
+	});
+
+	it('should detect invalid move number', () => {
+		const fen = '9/9/9/9/9/9/9/9/9 -/- w 0 - x';
+		const result = validateFen(fen);
+		expect(result.ok).toBe(false);
+		expect(result.error).toContain('expected an integer');
 	});
 });
