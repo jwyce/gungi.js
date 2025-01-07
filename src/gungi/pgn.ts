@@ -24,3 +24,4 @@
 // the tactician converting a major general and a lancer in a tower.
 //
 // If the move captures the enemy marshal, "勝" is appended and the game is over.
+// If the move is a fourfold repetition, "停" is appended and the game is a draw.
