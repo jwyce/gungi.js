@@ -362,7 +362,7 @@ export function validateFen(fen: string): FenValidationResult {
 		};
 	}
 
-	if (drafting.length !== 1 || (drafting !== '-' && !'wb'.includes(drafting))) {
+	if (drafting !== '-' && !'wb'.includes(drafting)) {
 		return {
 			ok: false,
 			error: `5th field (drafting availability) is invalid [expected '-', 'w', 'b', or 'wb', received ${drafting}]`,

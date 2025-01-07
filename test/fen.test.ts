@@ -92,7 +92,7 @@ describe('parseFEN', () => {
 	});
 
 	it('should handle towers and empty squares correctly', () => {
-		const fen = '3img3/1sa|a:g:s|1s3/9/9/9/9/9/9/9 d2/M1N3 b 3 b 2';
+		const fen = '3img3/1sa|a:g:s|1s3/9/9/9/9/9/9/9 M1N3/d2 b 3 b 2';
 		const result = parseFEN(fen);
 
 		expect(result.turn).toBe('b');
@@ -111,7 +111,7 @@ describe('parseFEN', () => {
 	});
 
 	it('should handle towers placed right next to each other correctly', () => {
-		const fen = '3img3/1sa|a:g:s|d:w|k:n|r:w|2/9/9/9/9/9/9/9 d2/M1N3 w 1 w 3';
+		const fen = '3img3/1sa|a:g:s|d:w|k:n|r:w|2/9/9/9/9/9/9/9 M1N3/d2 w 1 w 3';
 		const result = parseFEN(fen);
 
 		expect(result.turn).toBe('w');
@@ -156,7 +156,7 @@ describe('parseFEN', () => {
 	// Additional hand parsing test
 	it('should correctly parse hand pieces from FEN strings', () => {
 		const fen =
-			'3img3/1sa1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 0 1';
+			'3img3/1sa1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 - 1';
 		const result = parseFEN(fen);
 
 		expect(result.hand).toHaveLength(10); // 5 for white, 5 for black
