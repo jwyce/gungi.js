@@ -7,14 +7,15 @@ import {
 	INTRO_POSITION,
 	ParsedFEN,
 	parseFEN,
+	validateFen,
 } from './fen';
 import { generateMovesForSquare } from './move_gen';
 import {
 	Board,
 	Color,
+	get,
 	getTop,
 	HandPiece,
-	Piece,
 	pieceToFenCode,
 	SetupMode,
 	symbolToName,
@@ -78,13 +79,7 @@ export class Gungi {
 	}
 
 	get(square: string) {
-		const [file, rank] = square.split('-').map(Number);
-		if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
-
-		const s = this.#board[file - 1][9 - rank];
-		if (!s[0]) return null;
-
-		return s as Piece[];
+		return get(square, this.#board);
 	}
 
 	getDraftingRights(color?: Color) {
@@ -109,9 +104,15 @@ export class Gungi {
 		this.#initializeState(parseFEN(fen));
 	}
 
-	moves(opts?: { square?: string }) {
+	moves(opts?: { square?: string; verbose?: boolean }) {
 		if (opts?.square) {
-			return generateMovesForSquare(opts.square, this.#board, this.#mode);
+			const moves = generateMovesForSquare(
+				opts.square,
+				this.#board,
+				this.#mode,
+				this.#turn
+			);
+			return opts.verbose ? moves : moves.map((move) => move.san);
 		} else {
 			return [];
 		}
@@ -162,5 +163,9 @@ export class Gungi {
 
 	turn() {
 		return this.#turn;
+	}
+
+	validateFen(fen: string) {
+		return validateFen(fen);
 	}
 }

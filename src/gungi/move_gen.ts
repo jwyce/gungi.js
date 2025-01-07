@@ -1,5 +1,7 @@
 import {
+	Color,
 	getTop,
+	Move,
 	Piece,
 	PieceType,
 	piece as pieceType,
@@ -93,10 +95,11 @@ function getAvailableSquares(
 export function generateMovesForSquare(
 	square: string,
 	board: (Piece | null)[][][],
-	mode: SetupMode
+	mode: SetupMode,
+	turn: Color
 ) {
 	const piece = getTop(square, board);
-	if (!piece) return [];
+	if (!piece || turn !== piece.color) return [];
 
 	const [py, px] = square.split('-').map(Number);
 
@@ -119,5 +122,40 @@ export function generateMovesForSquare(
 		return getAvailableSquares([dy, dx], [y, x], [py, px], length, board);
 	});
 
-	return squares;
+	return squares.reduce((acc, s) => {
+		const from = `${piece.square}-${piece.tier}`;
+		const p = getTop(s, board);
+
+		const maxTier = mode === 'advanced' ? 3 : 2;
+
+		if (!p) {
+			acc.push({
+				piece: piece.type,
+				color: piece.color,
+				from,
+				to: `${s}-1`,
+				san: `${piece.type}(${from})(${s}-1)`,
+				before: '',
+				after: '',
+			});
+		} else {
+			if (
+				p.color === piece.color &&
+				p.tier < maxTier &&
+				p.type !== pieceType.marshal
+			) {
+				acc.push({
+					piece: piece.type,
+					color: piece.color,
+					from,
+					to: `${s}-${p.tier + 1}`,
+					san: `${piece.type}(${from})(${s}-${p.tier + 1})付`,
+					before: '',
+					after: '',
+				});
+			}
+		}
+
+		return acc;
+	}, [] as Move[]);
 }

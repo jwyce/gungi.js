@@ -23,12 +23,13 @@
 //    筒 musketeer = k
 //    謀 tactician = t
 //
-//    Black pieces are designated using lowercase ("mgljwcrsfdnakt"),
-//    while white pieces use uppercase ("MGLJWCRSFDNAKT")
+//    Black pieces are designated using lowercase ("mgijwnrsfdcakt"),
+//    while white pieces use uppercase ("MGIJWNRSFDCAKT")
 //
 //    A set of one or more consecutive empty squares within a rank is denoted by a digit from "1" to "9", corresponding to the number of squares.
 // 2: Hand piece data:
-//    Each piece in hand is represented by a single character (see above) followed by the number of that piece in hand; white's hand piecs come first followed by black's separated by a '/'.
+//    Each piece in hand is represented by a single character (see above) followed by the number of that piece in hand (1-9);
+//    white's hand piecs come first followed by black's separated by a '/'. if a player has no pieces in hand, it's represented with the character '-'
 // 3: Active player:
 //    "w" means that White is to move; "b" means that Black is to move.
 // 4: Setup mode:
@@ -82,7 +83,10 @@ export type ParsedFEN = {
 	moveNumber: number;
 };
 
-export const parseFEN = (fen: string): ParsedFEN => {
+export function parseFEN(fen: string): ParsedFEN {
+	const result = validateFen(fen);
+	if (!result.ok) throw new Error(result.error);
+
 	const [placement, handpieces, turn, mode, drafting, moveNumber] =
 		fen.split(' ');
 
@@ -129,10 +133,12 @@ export const parseFEN = (fen: string): ParsedFEN => {
 
 	const hand = handpieces.split('/').flatMap((playerHand) => {
 		const pieces: HandPiece[] = [];
-		for (let i = 0; i < playerHand.length; i += 2) {
-			const piece = playerHand[i] as PieceCode | Uppercase<PieceCode>;
-			const count = +playerHand[i + 1];
-			pieces.push(createHandPieceFromFenCode(piece, count));
+		if (playerHand !== '-') {
+			for (let i = 0; i < playerHand.length; i += 2) {
+				const piece = playerHand[i] as PieceCode | Uppercase<PieceCode>;
+				const count = +playerHand[i + 1];
+				pieces.push(createHandPieceFromFenCode(piece, count));
+			}
 		}
 		return pieces;
 	});
@@ -148,9 +154,9 @@ export const parseFEN = (fen: string): ParsedFEN => {
 		},
 		moveNumber: +moveNumber,
 	};
-};
+}
 
-export const encodeFEN = (fen: ParsedFEN): string => {
+export function encodeFEN(fen: ParsedFEN) {
 	let placement = '';
 	let emptyCount = 0;
 
@@ -196,15 +202,179 @@ export const encodeFEN = (fen: ParsedFEN): string => {
 		const piece = pieceToFenCode[symbolToName[p.type]];
 		hand += `${p.color === 'w' ? piece.toUpperCase() : piece}${p.count}`;
 	});
-	hand += '/';
+	hand += whiteHand.length > 0 ? '/' : '-/';
 	blackHand.forEach((p) => {
 		const piece = pieceToFenCode[symbolToName[p.type]];
 		hand += `${p.color === 'w' ? piece.toUpperCase() : piece}${p.count}`;
 	});
+	hand += blackHand.length > 0 ? '' : '-';
 
 	const draftKeys = Object.keys(fen.drafting).filter(
 		(key) => fen.drafting[key as Color]
 	);
 
 	return `${placement.slice(0, -1)} ${hand} ${fen.turn} ${setupModeToCode[fen.mode]} ${draftKeys.length > 0 ? draftKeys.join('') : '-'} ${fen.moveNumber}`;
+}
+
+type FenValidationResult = {
+	ok: boolean;
+	error?: string;
 };
+
+export function validateFen(fen: string): FenValidationResult {
+	const parts = fen.split(' ');
+	if (parts.length !== 6)
+		return { ok: false, error: `expected 6 fields, received ${parts.length}` };
+
+	const [placement, handpieces, turn, mode, drafting, moveNumber] = parts;
+	const ranks = placement.split('/');
+	if (ranks.length !== 9)
+		return {
+			ok: false,
+			error: `1st field (piece positions) is invalid [expected 9 ranks, received ${ranks.length}]`,
+		};
+
+	for (let i = 0; i < ranks.length; i++) {
+		const rank = ranks[i];
+		const fileParts = rank.split('|');
+		let fileCount = 0;
+
+		for (let k = 0; k < fileParts.length; k++) {
+			const filePart = fileParts[k];
+			if (filePart.includes(':')) {
+				fileCount++;
+				const towerPieces = filePart.split(':');
+				if (towerPieces.length > 3) {
+					return {
+						ok: false,
+						error: `1st field (piece positions) is invalid [tower size] @(${i + 1}-${fileCount})`,
+					};
+				}
+				if (
+					!towerPieces.every((p) => 'mgijwnrsfdcaktMGIJWNRSFDCAKT'.includes(p))
+				) {
+					return {
+						ok: false,
+						error: `1st field (piece positions) is invalid [invalid piece] @(${i + 1}-${fileCount})`,
+					};
+				}
+			} else {
+				const pieces = filePart.split('');
+
+				for (let l = 0; l < pieces.length; l++) {
+					const piece = pieces[l];
+
+					if (Number.isInteger(+piece)) {
+						fileCount += +piece;
+					} else {
+						fileCount++;
+						if (!'mgijwnrsfdcaktMGIJWNRSFDCAKT'.includes(piece)) {
+							return {
+								ok: false,
+								error: `1st field (piece positions) is invalid [invalid piece] @(${i + 1}-${fileCount})`,
+							};
+						}
+					}
+				}
+			}
+		}
+		if (fileCount !== 9) {
+			return {
+				ok: false,
+				error: `1st field (piece positions) is invalid [expected 9 squares, received ${fileCount}] in rank: ${i + 1}`,
+			};
+		}
+	}
+
+	const hands = handpieces.split('/');
+	if (hands.length !== 2)
+		return {
+			ok: false,
+			error: `2nd field (hand pieces) is invalid [expected 2 hands, received ${hands.length}]`,
+		};
+
+	const [whiteHand, blackHand] = hands;
+	if (
+		(whiteHand.length === 1 && whiteHand !== '-') ||
+		(blackHand.length === 1 && blackHand !== '-')
+	) {
+		return {
+			ok: false,
+			error: `2nd field (hand pieces) is invalid [invalid piece]`,
+		};
+	}
+
+	if (
+		(whiteHand.length > 1 && whiteHand.length % 2 !== 0) ||
+		(blackHand.length > 1 && blackHand.length % 2 !== 0)
+	) {
+		return {
+			ok: false,
+			error: `2nd field (hand pieces) is invalid [invalid piece count]`,
+		};
+	}
+
+	if (whiteHand.length > 1) {
+		for (let i = 0; i < whiteHand.length; i += 2) {
+			if (!'MGIJWNRSFDCAKT'.includes(whiteHand[i])) {
+				return {
+					ok: false,
+					error: `2nd field (hand pieces) is invalid [invalid piece]`,
+				};
+			}
+			if (!Number.isInteger(+whiteHand[i + 1])) {
+				return {
+					ok: false,
+					error: `2nd field (hand pieces) is invalid [invalid count]`,
+				};
+			}
+		}
+	}
+
+	if (blackHand.length > 1) {
+		for (let i = 0; i < blackHand.length; i += 2) {
+			if (!'mgijwnrsfdcakt'.includes(blackHand[i])) {
+				return {
+					ok: false,
+					error: `2nd field (hand pieces) is invalid [invalid piece]`,
+				};
+			}
+			if (!Number.isInteger(+blackHand[i + 1])) {
+				return {
+					ok: false,
+					error: `2nd field (hand pieces) is invalid [invalid count]`,
+				};
+			}
+		}
+	}
+
+	if (turn !== 'w' && turn !== 'b') {
+		return {
+			ok: false,
+			error: `3rd field (active player) is invalid [expected 'w' or 'b', received ${turn}]`,
+		};
+	}
+
+	if (mode.length !== 1 || !'0123'.includes(mode)) {
+		return {
+			ok: false,
+			error: `4th field (setup mode) is invalid [expected '0', '1', '2', or '3', received ${mode}]`,
+		};
+	}
+
+	if (drafting.length !== 1 || (drafting !== '-' && !'wb'.includes(drafting))) {
+		return {
+			ok: false,
+			error: `5th field (drafting availability) is invalid [expected '-', 'w', 'b', or 'wb', received ${drafting}]`,
+		};
+	}
+
+	if (!Number.isInteger(+moveNumber)) {
+		return {
+			ok: false,
+			error: `6th field (full move number) is invalid [expected an integer, received ${moveNumber}]`,
+		};
+	}
+
+	return { ok: true };
+}

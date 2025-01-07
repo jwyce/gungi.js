@@ -19,6 +19,19 @@ export type HandPiece = {
 	count: number;
 };
 
+export type Move = {
+	color: Color;
+	piece: PieceType;
+	from?: string;
+	to: string;
+	san: string;
+	before: string;
+	after: string;
+	draftFinished?: boolean;
+	captured?: Piece[];
+	betrayed?: Piece[];
+};
+
 export type SetupMode = 'intro' | 'beginner' | 'intermediate' | 'advanced';
 export const setupModeToCode: Record<SetupMode, number> = {
 	intro: 0,
@@ -162,11 +175,16 @@ export const canonicalNames: Record<PieceType, string> = {
 };
 
 export function getTop(square: string, board: (Piece | null)[][][]) {
+	const tower = get(square, board);
+	return tower ? tower.at(-1) : null;
+}
+
+export function get(square: string, board: (Piece | null)[][][]) {
 	const [file, rank] = square.split('-').map(Number);
 	if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
 
-	const s = board[file - 1][9 - rank].at(-1);
-	if (!s) return null;
+	const s = board[file - 1][9 - rank];
+	if (!s[0]) return null;
 
-	return s;
+	return s as Piece[];
 }
