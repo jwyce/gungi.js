@@ -21,8 +21,6 @@ function sleep(ms: number) {
 const main = async () => {
 	const gungi = new Gungi(ADVANCED_POSITION);
 
-	gungi.print();
-
 	while (!gungi.isGameOver()) {
 		const moves = gungi.moves();
 		const move = moves[Math.floor(Math.random() * moves.length)];
