@@ -21,17 +21,14 @@ function sleep(ms: number) {
 const main = async () => {
 	const gungi = new Gungi(ADVANCED_POSITION);
 
-	let steps = 10_000;
 	gungi.print();
 
-	while (!gungi.isGameOver() && steps > 0) {
+	while (!gungi.isGameOver()) {
 		const moves = gungi.moves();
 		const move = moves[Math.floor(Math.random() * moves.length)];
 		gungi.move(move);
 		printText(gungi.ascii());
-
 		await sleep(5);
-		steps--;
 	}
 
 	console.log(gungi.fen() + '\n');
