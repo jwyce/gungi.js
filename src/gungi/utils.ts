@@ -27,9 +27,9 @@ export type Move = {
 	san: string;
 	before: string;
 	after: string;
+	type: 'route' | 'capture' | 'tsuke' | 'betray' | 'arata';
 	draftFinished?: boolean;
 	captured?: Piece[];
-	betrayed?: Piece[];
 };
 
 export type SetupMode = 'intro' | 'beginner' | 'intermediate' | 'advanced';
@@ -173,6 +173,58 @@ export const canonicalNames: Record<PieceType, string> = {
 	筒: 'tsutsu',
 	謀: 'boushou',
 };
+
+export function convert(
+	square: string,
+	pieces: Piece[],
+	board: (Piece | null)[][][]
+) {
+	const [file, rank] = square.split('-').map(Number);
+	const tower = get(square, board);
+	if (!tower) return;
+
+	board[file - 1][9 - rank] = tower.map((piece) => {
+		const p = pieces.find((p) => JSON.stringify(p) === JSON.stringify(piece));
+		if (p) {
+			piece.color = piece.color === 'b' ? 'w' : 'b';
+		}
+		return piece;
+	});
+}
+
+export function remove(
+	square: string,
+	pieces: Piece[],
+	board: (Piece | null)[][][]
+) {
+	const [file, rank] = square.split('-').map(Number);
+	const tower = get(square, board);
+	if (!tower) return;
+
+	const newTower = tower.filter(
+		(piece) => !pieces.some((p) => JSON.stringify(p) === JSON.stringify(piece))
+	);
+
+	if (newTower.length === 0) board[file - 1][9 - rank] = [null];
+	else board[file - 1][9 - rank] = newTower;
+}
+
+export function removeTop(square: string, board: (Piece | null)[][][]) {
+	const [file, rank] = square.split('-').map(Number);
+	const tower = get(square, board);
+	if (!tower) return;
+
+	tower.pop();
+	if (tower.length === 0) board[file - 1][9 - rank] = [null];
+}
+
+export function put(piece: Piece, board: (Piece | null)[][][]) {
+	const [file, rank] = piece.square.split('-').map(Number);
+	const occupied = board[file - 1][9 - rank];
+
+	if (!occupied[0]) board[file - 1][9 - rank] = [piece];
+	else board[file - 1][9 - rank].push(piece);
+}
 
 export function getTop(square: string, board: (Piece | null)[][][]) {
 	const tower = get(square, board);

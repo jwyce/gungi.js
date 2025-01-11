@@ -106,12 +106,7 @@ export class Gungi {
 
 	moves(opts?: { square?: string; verbose?: boolean }) {
 		if (opts?.square) {
-			const moves = generateMovesForSquare(
-				opts.square,
-				this.#board,
-				this.#mode,
-				this.#turn
-			);
+			const moves = generateMovesForSquare(opts.square, this.fen());
 			return opts.verbose ? moves : moves.map((move) => move.san);
 		} else {
 			return [];
