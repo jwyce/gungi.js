@@ -25,3 +25,35 @@
 //
 // If the move captures the enemy marshal, "勝" is appended and the game is over.
 // If the move is a fourfold repetition, "停" is appended and the game is a draw.
+
+import { parseFEN } from './fen';
+import { Move } from './utils';
+
+export type PGNOptions = {
+	maxWidth?: number;
+	newline?: string;
+};
+
+export function encodePGN(history: Move[], opts?: PGNOptions) {
+	const maxWidth = opts?.maxWidth ?? 6;
+	const newline = opts?.newline ?? '\n';
+
+	let pgn = '';
+	let prev = 0;
+	history.forEach((move, i) => {
+		const state = parseFEN(move.before);
+		if (state.moveNumber !== prev) {
+			const indicator = move.color === 'w' ? '.' : '...';
+			pgn += `${state.moveNumber}${indicator} `;
+			prev = state.moveNumber;
+		}
+
+		pgn += ` ${move.san} `;
+
+		if ((i + 1) % maxWidth === 0) {
+			pgn += newline;
+		}
+	});
+
+	return pgn.replaceAll('  ', ' ');
+}

@@ -10,6 +10,7 @@ import {
 	validateFen,
 } from './fen';
 import { generateArata, generateMovesForSquare } from './move_gen';
+import { encodePGN, PGNOptions } from './pgn';
 import {
 	Board,
 	Color,
@@ -150,13 +151,28 @@ export class Gungi {
 		return this.#drafting.b || this.#drafting.w;
 	}
 
+	isFourfoldRepetition() {
+		const states = this.#history.map((move) => move.after.split(' ')[0]);
+		const frequencyMap = states.reduce((map, str) => {
+			map.set(str, (map.get(str) || 0) + 1);
+			return map;
+		}, new Map<string, number>());
+
+		return Math.max(...frequencyMap.values()) === 4;
+	}
+
 	isGameOver() {
-		return !this.inDraft() && isGameOver(this.#board);
+		return (
+			!this.inDraft() &&
+			(isGameOver(this.#board) || this.isFourfoldRepetition())
+		);
 	}
 
 	load(fen: string) {
 		this.#initializeState(parseFEN(fen));
 	}
+
+	loadPgn(pgn: string) {}
 
 	move(
 		move:
@@ -178,10 +194,13 @@ export class Gungi {
 		if (!found) return;
 
 		this.#history.push(found);
+		if (this.isFourfoldRepetition()) this.#history.at(-1)!.san += '停';
 		this.#initializeState(parseFEN(found.after));
 	}
 
 	moves(opts?: { square?: string; arata?: HandPiece; verbose?: boolean }) {
+		if (this.isGameOver()) return [];
+
 		if (opts?.square) {
 			const moves = generateMovesForSquare(opts.square, this.fen());
 			return opts.verbose ? moves : moves.map((move) => move.san);
@@ -211,6 +230,10 @@ export class Gungi {
 
 	moveNumber() {
 		return this.#moveNumber;
+	}
+
+	pgn(opts?: PGNOptions) {
+		return encodePGN(this.#history, opts);
 	}
 
 	print(opts?: { english?: boolean }) {

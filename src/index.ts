@@ -26,7 +26,6 @@ const main = async () => {
 
 	while (!gungi.isGameOver() && steps > 0) {
 		const moves = gungi.moves();
-		if (moves.length === 0) break;
 		const move = moves[Math.floor(Math.random() * moves.length)];
 		gungi.move(move);
 		printText(gungi.ascii());
@@ -36,7 +35,7 @@ const main = async () => {
 	}
 
 	console.log(gungi.fen() + '\n');
-	console.log(gungi.history().join(' '));
+	console.log(gungi.pgn());
 };
 
 main().catch(console.error);

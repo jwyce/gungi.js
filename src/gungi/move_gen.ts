@@ -307,15 +307,17 @@ function makeMove(move: Move, fen: string) {
 
 	put(to, board);
 
+	if (turn === 'b' && (drafting.w || !drafting.b)) moveNumber++;
+	if (turn === 'w' && !drafting.b && !drafting.w && move.draftFinished)
+		moveNumber++;
+
 	if (drafting.w === drafting.b) {
 		if (!move.draftFinished || turn !== 'w') {
 			turn = turn === 'b' ? 'w' : 'b';
-			if (turn === 'b') moveNumber++;
 		}
 	} else {
 		if (!drafting.b && turn === 'b') {
 			turn = 'w';
-			moveNumber++;
 		} else if (!drafting.w && turn === 'w') {
 			turn = 'b';
 		}
