@@ -1,6 +1,5 @@
 import { encodeFEN, parseFEN } from './fen';
 import {
-	Color,
 	convert,
 	get,
 	getTop,
@@ -12,7 +11,7 @@ import {
 	put,
 	remove,
 	removeTop,
-	SetupMode,
+	updateHand,
 } from './utils';
 
 export const dirs = [
@@ -176,7 +175,73 @@ export function generateMovesForSquare(square: string, fen: string) {
 	}, [] as Move[]);
 }
 
-function generateArata() {}
+export function generateArata(piece: HandPiece, fen: string) {
+	const { board, turn, mode, hand, drafting } = parseFEN(fen);
+	if (!piece || turn !== piece.color) return [];
+	const isMarshalPlaced = !hand.some(
+		(p) => p.type === pieceType.marshal && p.color === piece.color
+	);
+	if (!isMarshalPlaced && piece.type !== pieceType.marshal) return [];
+
+	const isDraft = drafting.b || drafting.w;
+	const maxTier = mode === 'advanced' ? 3 : 2;
+	let ranks: number[] = [];
+	let maybe: number[] = [];
+
+	// if in draft can only place within your first 3 ranks, otherwise can placed as far as your deepest piece
+	if (isDraft) {
+		ranks = piece.color === 'w' ? [7, 8, 9] : [1, 2, 3];
+	} else {
+		const start = piece.color === 'b' ? 1 : 9;
+		const end = piece.color === 'b' ? 9 : 1;
+		const step = piece.color === 'b' ? 1 : -1;
+		for (
+			let rank = start;
+			piece.color === 'b' ? rank <= end : rank >= end;
+			rank += step
+		) {
+			const tops = Array.from({ length: 9 }).map((_, i) =>
+				getTop(`${rank}-${i}`, board)
+			);
+			if (tops.some((p) => p && p.color === piece.color)) {
+				ranks.push(...maybe, rank);
+				maybe = [];
+			} else {
+				maybe.push(rank);
+			}
+		}
+	}
+
+	const squares = ranks.flatMap((rank) =>
+		Array.from({ length: 9 }, (_, i) => `${rank}-${i + 1}`)
+	);
+
+	return squares.reduce((acc, s) => {
+		const p = getTop(s, board);
+		const arata = {
+			type: piece.type,
+			color: piece.color,
+			square: s,
+			tier: 0,
+		};
+
+		// you can arata an empty square or a tower with your own piece on top
+		if (
+			!p ||
+			(p.color === arata.color &&
+				p.tier < maxTier &&
+				p.type !== pieceType.marshal)
+		) {
+			const t = (p?.tier ?? 0) + 1;
+			acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
+			if (drafting[piece.color]) {
+				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata', [], true));
+			}
+		}
+
+		return acc;
+	}, [] as Move[]);
+}
 
 function createMove(
 	piece: Piece,
@@ -190,7 +255,8 @@ function createMove(
 	const toTier = +(to.split('-').at(-1) ?? 0);
 	const arata = type === 'arata' ? '新' : '';
 	const capture = type === 'capture' ? '取' : '';
-	const tsuke = type === 'tsuke' || toTier - piece.tier > 0 ? '付' : '';
+	const tsuke =
+		type === 'tsuke' || (toTier !== 1 && toTier - piece.tier > 0) ? '付' : '';
 	const betray =
 		type === 'betray' ? `返${captured?.map((p) => p.type).join('')}` : '';
 	const draftDone = draftFinished ? '終' : '';
@@ -217,11 +283,11 @@ function createMove(
 
 function makeMove(move: Move, fen: string) {
 	let { board, hand, mode, turn, drafting, moveNumber } = parseFEN(fen);
-	const [file, rank, tier] = move.to.split('-');
+	const [rank, file, tier] = move.to.split('-');
 	const to = {
 		type: move.piece,
 		color: move.color,
-		square: `${file}-${rank}`,
+		square: `${rank}-${file}`,
 		tier: +tier,
 	};
 
@@ -229,21 +295,39 @@ function makeMove(move: Move, fen: string) {
 		removeTop(move.from!, board);
 	} else if (move.type === 'capture') {
 		removeTop(move.from!, board);
-		remove(`${file}-${rank}`, move.captured!, board);
+		remove(`${rank}-${file}`, move.captured!, board);
 	} else if (move.type === 'betray') {
 		removeTop(move.from!, board);
-		convert(`${file}-${rank}`, move.captured!, board);
+		convert(`${rank}-${file}`, move.captured!, board);
+		updateHand(move.captured!, hand, true);
+	} else if (move.type === 'arata') {
+		updateHand([to], hand);
+		if (move.draftFinished) drafting[move.color] = false;
 	}
 
 	put(to, board);
-	if (turn === 'b') moveNumber++;
-	turn = turn === 'b' ? 'w' : 'b';
+
+	if (drafting.w === drafting.b) {
+		if (!move.draftFinished || turn !== 'w') {
+			turn = turn === 'b' ? 'w' : 'b';
+			if (turn === 'b') moveNumber++;
+		}
+	} else {
+		if (!drafting.b && turn === 'b') {
+			turn = 'w';
+			moveNumber++;
+		} else if (!drafting.w && turn === 'w') {
+			turn = 'b';
+		}
+	}
+
+	let gameOverSAN = '';
+	if (move.captured?.some((p) => p.type === pieceType.marshal))
+		gameOverSAN = '勝';
 
 	return {
 		after: encodeFEN({ board, hand, mode, turn, drafting, moveNumber }),
-		// check marshal captured
-		// check fourfold repetition
-		gameOverSAN: '',
+		gameOverSAN,
 	};
 }
 

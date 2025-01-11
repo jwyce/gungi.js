@@ -174,16 +174,35 @@ export const canonicalNames: Record<PieceType, string> = {
 	謀: 'boushou',
 };
 
+export function updateHand(
+	pieces: Piece[],
+	hand: HandPiece[],
+	oppositeColor = false
+): HandPiece[] {
+	pieces.forEach((p) => {
+		const c = oppositeColor ? (p.color === 'b' ? 'w' : 'b') : p.color;
+		const hp = hand.find((h) => h.type === p.type && h.color === c);
+		const hpi = hand.findIndex((h) => h.type === p.type && h.color === c);
+
+		if (hp) {
+			hp.count--;
+			if (hp.count === 0) hand.splice(hpi, 1);
+		}
+	});
+
+	return hand;
+}
+
 export function convert(
 	square: string,
 	pieces: Piece[],
 	board: (Piece | null)[][][]
 ) {
-	const [file, rank] = square.split('-').map(Number);
+	const [rank, file] = square.split('-').map(Number);
 	const tower = get(square, board);
 	if (!tower) return;
 
-	board[file - 1][9 - rank] = tower.map((piece) => {
+	board[rank - 1][9 - file] = tower.map((piece) => {
 		const p = pieces.find((p) => JSON.stringify(p) === JSON.stringify(piece));
 		if (p) {
 			piece.color = piece.color === 'b' ? 'w' : 'b';
@@ -197,7 +216,7 @@ export function remove(
 	pieces: Piece[],
 	board: (Piece | null)[][][]
 ) {
-	const [file, rank] = square.split('-').map(Number);
+	const [rank, file] = square.split('-').map(Number);
 	const tower = get(square, board);
 	if (!tower) return;
 
@@ -205,38 +224,46 @@ export function remove(
 		(piece) => !pieces.some((p) => JSON.stringify(p) === JSON.stringify(piece))
 	);
 
-	if (newTower.length === 0) board[file - 1][9 - rank] = [null];
-	else board[file - 1][9 - rank] = newTower;
+	if (newTower.length === 0) board[rank - 1][9 - file] = [null];
+	else board[rank - 1][9 - file] = newTower;
 }
 
 export function removeTop(square: string, board: (Piece | null)[][][]) {
-	const [file, rank] = square.split('-').map(Number);
+	const [rank, file] = square.split('-').map(Number);
 	const tower = get(square, board);
 	if (!tower) return;
 
 	tower.pop();
-	if (tower.length === 0) board[file - 1][9 - rank] = [null];
+	if (tower.length === 0) board[rank - 1][9 - file] = [null];
 }
 
 export function put(piece: Piece, board: (Piece | null)[][][]) {
-	const [file, rank] = piece.square.split('-').map(Number);
-	const occupied = board[file - 1][9 - rank];
+	const [rank, file] = piece.square.split('-').map(Number);
+	const occupied = board[rank - 1][9 - file];
 
-	if (!occupied[0]) board[file - 1][9 - rank] = [piece];
-	else board[file - 1][9 - rank].push(piece);
+	if (!occupied[0]) board[rank - 1][9 - file] = [piece];
+	else board[rank - 1][9 - file].push(piece);
 }
 
 export function getTop(square: string, board: (Piece | null)[][][]) {
 	const tower = get(square, board);
-	return tower ? tower.at(-1) : null;
+	return tower ? tower.at(-1)! : null;
 }
 
 export function get(square: string, board: (Piece | null)[][][]) {
-	const [file, rank] = square.split('-').map(Number);
-	if (file < 1 || file > 9 || rank < 1 || rank > 9) return null;
+	const [rank, file] = square.split('-').map(Number);
+	if (rank < 1 || rank > 9 || file < 1 || file > 9) return null;
 
-	const s = board[file - 1][9 - rank];
+	const s = board[rank - 1][9 - file];
 	if (!s[0]) return null;
 
 	return s as Piece[];
+}
+
+export function isGameOver(board: (Piece | null)[][][]) {
+	const marshal = board
+		.flat()
+		.flat()
+		.filter((p) => p?.type === '帥');
+	return marshal.length !== 2;
 }

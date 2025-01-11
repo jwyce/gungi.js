@@ -1,12 +1,42 @@
-import { BEGINNNER_POSITION, Gungi } from './gungi';
+import { ADVANCED_POSITION, Gungi } from './gungi';
 
 export * from './gungi';
 
-const gungi = new Gungi(BEGINNNER_POSITION);
-gungi.load(
-	'3img3/1ra1n1as1/d1fwdwf1d/9/9/2|j:n|6/D1F|W:T|DWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 3 - 20'
-);
+// Function to clear the terminal
+function clearTerminal() {
+	process.stdout.write('\x1b[2J'); // ANSI escape sequence to clear the terminal
+	process.stdout.write('\x1b[H'); // Move cursor to the home position (top-left)
+}
 
-gungi.print();
+// Function to print text without flicker
+function printText(text: string) {
+	clearTerminal();
+	process.stdout.write(text);
+}
 
-console.log(gungi.moves({ square: '7-6', verbose: true }));
+function sleep(ms: number) {
+	return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+const main = async () => {
+	const gungi = new Gungi(ADVANCED_POSITION);
+
+	let steps = 10_000;
+	gungi.print();
+
+	while (!gungi.isGameOver() && steps > 0) {
+		const moves = gungi.moves();
+		if (moves.length === 0) break;
+		const move = moves[Math.floor(Math.random() * moves.length)];
+		gungi.move(move);
+		printText(gungi.ascii());
+
+		await sleep(5);
+		steps--;
+	}
+
+	console.log(gungi.fen() + '\n');
+	console.log(gungi.history().join(' '));
+};
+
+main().catch(console.error);
