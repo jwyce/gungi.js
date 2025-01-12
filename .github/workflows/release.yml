@@ -25,9 +25,6 @@ jobs:
       - name: Build the package
         run: pnpm build
 
-      - name: Authenticate to NPM
-        run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_ACCESS_TOKEN }}" > cli/.npmrc
-
       - name: Create Version PR or Publish to NPM
         id: changesets
         uses: changesets/action@v1
