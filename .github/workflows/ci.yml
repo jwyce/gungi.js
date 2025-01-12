@@ -1,0 +1,57 @@
+# this workflow will run on every pr to make sure the project is following the guidelines
+
+name: CI
+
+on:
+  pull_request:
+    branches: ['*']
+  merge_group:
+
+jobs:
+  check-changeset:
+    runs-on: ubuntu-latest
+    name: Check Changeset
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+
+      - name: Check and Validate Changes
+        run: |
+          git fetch origin main:main
+          changes=$(git diff --name-only main...${{ github.sha }} || true)
+          if [[ -n "$changes" ]]; then
+            echo "Changes detected: $changes"
+            pnpm changeset status --since origin/main
+            exit_status=$?
+            if [[ $exit_status -eq 0 ]]; then
+              echo "Changeset validation succeeded."
+            else
+              echo "Changeset validation failed."
+            fi
+          else
+            echo "No changes detected"
+          fi
+
+  prettier:
+    runs-on: ubuntu-latest
+    name: Run Prettier
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+
+      - run: pnpm format:check
+
+  tsc:
+    runs-on: ubuntu-latest
+    name: Run Typechecker
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: ./.github/actions/setup
+
+      - run: pnpm typecheck
