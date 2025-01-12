@@ -41,6 +41,33 @@ export const setupModeToCode: Record<SetupMode, number> = {
 };
 export const setupCodeToMode = inverseMap(setupModeToCode);
 
+export const WHITE = 'w';
+export const BLACK = 'b';
+
+export const TSUKE = '付';
+export const TAKE = '取';
+export const BETRAY = '返';
+export const ARATA = '新';
+
+export const MARSHAL = '帥';
+export const GENERAL = '大';
+export const LIEUTENANT_GENERAL = '中';
+export const MAJOR_GENERAL = '小';
+export const WARRIOR = '侍';
+export const LANCER = '槍';
+export const RIDER = '馬';
+export const SPY = '忍';
+export const FORTRESS = '砦';
+export const SOLDIER = '兵';
+export const CANNON = '砲';
+export const ARCHER = '弓';
+export const MUSKETEER = '筒';
+export const TACTICIAN = '謀';
+
+export const SQUARES = Array.from({ length: 9 }, (_, x) => x + 1).flatMap((x) =>
+	Array.from({ length: 9 }, (_, y) => `${x}-${y + 1}`)
+);
+
 export type Color = 'b' | 'w';
 export type PieceType =
 	| '帥'
@@ -157,7 +184,7 @@ export const createHandPieceFromFenCode = (
 	};
 };
 
-export const canonicalNames: Record<PieceType, string> = {
+export const CANONICAL_NAMES: Record<PieceType, string> = {
 	帥: 'sui',
 	大: 'taishou',
 	中: 'chuujou',
@@ -172,6 +199,40 @@ export const canonicalNames: Record<PieceType, string> = {
 	弓: 'yumi',
 	筒: 'tsutsu',
 	謀: 'boushou',
+};
+
+export const ENGLISH_NAMES: Record<PieceType, string> = {
+	帥: 'marshal',
+	大: 'general',
+	中: 'lieutenant general',
+	小: 'major general',
+	侍: 'warrior',
+	槍: 'lancer',
+	馬: 'rider',
+	忍: 'spy',
+	砦: 'fortress',
+	兵: 'soldier',
+	砲: 'cannon',
+	弓: 'archer',
+	筒: 'musketeer',
+	謀: 'tactician',
+};
+
+export const FEN_CODES: Record<PieceType, string> = {
+	帥: 'm',
+	大: 'g',
+	中: 'i',
+	小: 'j',
+	侍: 'w',
+	槍: 'n',
+	馬: 'r',
+	忍: 's',
+	砦: 'f',
+	兵: 'd',
+	砲: 'c',
+	弓: 'a',
+	筒: 'k',
+	謀: 't',
 };
 
 export function updateHand(
@@ -247,15 +308,15 @@ export function put(piece: Piece, board: (Piece | null)[][][]) {
 
 export function getTop(square: string, board: (Piece | null)[][][]) {
 	const tower = get(square, board);
-	return tower ? tower.at(-1)! : null;
+	return tower ? tower.at(-1)! : undefined;
 }
 
 export function get(square: string, board: (Piece | null)[][][]) {
 	const [rank, file] = square.split('-').map(Number);
-	if (rank < 1 || rank > 9 || file < 1 || file > 9) return null;
+	if (rank < 1 || rank > 9 || file < 1 || file > 9) return undefined;
 
 	const s = board[rank - 1][9 - file];
-	if (!s[0]) return null;
+	if (!s[0]) return undefined;
 
 	return s as Piece[];
 }

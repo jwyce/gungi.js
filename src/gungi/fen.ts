@@ -85,7 +85,7 @@ export type ParsedFEN = {
 
 export function parseFEN(fen: string): ParsedFEN {
 	const result = validateFen(fen);
-	if (!result.ok) throw new Error(result.error);
+	if (!result.ok) throw new Error(`Invalid FEN: ${result.error}`);
 
 	const [placement, handpieces, turn, mode, drafting, moveNumber] =
 		fen.split(' ');

@@ -10,25 +10,74 @@ import {
 	validateFen,
 } from './fen';
 import { generateArata, generateMovesForSquare } from './move_gen';
-import { encodePGN, PGNOptions } from './pgn';
+import { encodePGN, parsePGN, PGNOptions } from './pgn';
 import {
+	ARATA,
+	ARCHER,
+	BETRAY,
+	BLACK,
 	Board,
+	CANNON,
+	CANONICAL_NAMES,
 	Color,
+	ENGLISH_NAMES,
+	FEN_CODES,
+	FORTRESS,
+	GENERAL,
 	get,
 	getTop,
 	HandPiece,
 	isGameOver,
+	LANCER,
+	LIEUTENANT_GENERAL,
+	MAJOR_GENERAL,
+	MARSHAL,
 	Move,
+	MUSKETEER,
 	pieceToFenCode,
+	RIDER,
 	SetupMode,
+	SOLDIER,
+	SPY,
+	SQUARES,
 	symbolToName,
+	TACTICIAN,
+	TAKE,
+	TSUKE,
+	WARRIOR,
+	WHITE,
 } from './utils';
 
 export {
+	WHITE,
+	BLACK,
+	MARSHAL,
+	GENERAL,
+	LIEUTENANT_GENERAL,
+	MAJOR_GENERAL,
+	WARRIOR,
+	LANCER,
+	RIDER,
+	SPY,
+	FORTRESS,
+	SOLDIER,
+	CANNON,
+	ARCHER,
+	MUSKETEER,
+	TACTICIAN,
+	TSUKE,
+	TAKE,
+	BETRAY,
+	ARATA,
 	INTRO_POSITION,
 	BEGINNNER_POSITION,
 	INTERMEDIATE_POSITION,
 	ADVANCED_POSITION,
+	SQUARES,
+	CANONICAL_NAMES,
+	ENGLISH_NAMES,
+	FEN_CODES,
+	validateFen,
 };
 
 export class Gungi {
@@ -105,11 +154,24 @@ export class Gungi {
 
 	captured(color?: Color) {
 		const allCaptured = this.#history.flatMap((move) => move.captured ?? []);
-		return color ? allCaptured.filter((p) => p.color === color) : allCaptured;
+		const capturedCounts = allCaptured.reduce((acc, p) => {
+			const c = acc.find((a) => a.type === p.type && a.color === p.color);
+			if (c) {
+				c.count++;
+			} else {
+				acc.push({ type: p.type, color: p.color, count: 1 });
+			}
+			return acc;
+		}, [] as HandPiece[]);
+
+		return color
+			? capturedCounts.filter((p) => p.color === color)
+			: capturedCounts;
 	}
 
 	clear() {
 		this.#initializeState(parseFEN(ADVANCED_POSITION));
+		this.#history = [];
 	}
 
 	fen() {
@@ -152,7 +214,8 @@ export class Gungi {
 	}
 
 	isFourfoldRepetition() {
-		const states = this.#history.map((move) => move.after.split(' ')[0]);
+		const states = this.#history.map((move) => move.before.split(' ')[0]);
+		if (states.length) states.push(this.#history.at(-1)!.after.split(' ')[0]);
 		const frequencyMap = states.reduce((map, str) => {
 			map.set(str, (map.get(str) || 0) + 1);
 			return map;
@@ -170,32 +233,40 @@ export class Gungi {
 
 	load(fen: string) {
 		this.#initializeState(parseFEN(fen));
+		this.#history = [];
 	}
 
-	loadPgn(pgn: string) {}
-
-	move(
-		move:
-			| string
-			| Pick<Move, 'from' | 'to' | 'type' | 'captured' | 'draftFinished'>
+	loadPgn(
+		pgn: string,
+		fen = ADVANCED_POSITION,
+		opts?: Pick<PGNOptions, 'newline'>
 	) {
+		this.#initializeState(parseFEN(fen));
+		this.#history = [];
+		const moves = parsePGN(pgn, opts);
+		moves.forEach((move) => this.move(move));
+	}
+
+	move(move: string | Exclude<Move, 'color' | 'san' | 'before' | 'after'>) {
 		const moves = this.moves({ verbose: true }) as Move[];
 		const found =
 			typeof move === 'string'
 				? moves.find((m) => m.san === move)
 				: moves.find(
 						(m) =>
+							move.piece === m.piece &&
 							move.type === m.type &&
 							move.from === m.from &&
 							move.to === m.to &&
 							move.captured === m.captured &&
 							move.draftFinished === m.draftFinished
 					);
-		if (!found) return;
+		if (!found) throw new Error(`Illegal move: ${move}`);
 
 		this.#history.push(found);
 		if (this.isFourfoldRepetition()) this.#history.at(-1)!.san += '停';
 		this.#initializeState(parseFEN(found.after));
+		return found;
 	}
 
 	moves(opts?: { square?: string; arata?: HandPiece; verbose?: boolean }) {
@@ -211,11 +282,7 @@ export class Gungi {
 			const moves = this.hand().flatMap((hp) => generateArata(hp, this.fen()));
 			return opts?.verbose ? moves : moves.map((move) => move.san);
 		} else {
-			const allSquares = Array.from({ length: 9 }, (_, x) => x + 1).flatMap(
-				(x) => Array.from({ length: 9 }, (_, y) => `${x}-${y + 1}`)
-			);
-
-			const boardMoves = allSquares.flatMap((square) =>
+			const boardMoves = SQUARES.flatMap((square) =>
 				generateMovesForSquare(square, this.fen())
 			);
 
@@ -242,6 +309,7 @@ export class Gungi {
 
 	reset() {
 		this.#initializeState(parseFEN(this.#initPosition));
+		this.#history = [];
 	}
 
 	turn() {
@@ -252,7 +320,10 @@ export class Gungi {
 		const lastMove = this.#history.pop();
 		if (lastMove) {
 			this.#initializeState(parseFEN(lastMove.before));
+			return lastMove;
 		}
+
+		return null;
 	}
 
 	validateFen(fen: string) {

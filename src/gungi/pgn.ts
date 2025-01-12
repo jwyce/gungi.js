@@ -48,12 +48,21 @@ export function encodePGN(history: Move[], opts?: PGNOptions) {
 			prev = state.moveNumber;
 		}
 
-		pgn += ` ${move.san} `;
+		pgn += `${move.san} `;
 
 		if ((i + 1) % maxWidth === 0) {
 			pgn += newline;
 		}
 	});
 
-	return pgn.replaceAll('  ', ' ');
+	return pgn.replaceAll('  ', ' ').trim();
+}
+
+export function parsePGN(pgn: string, opts?: Pick<PGNOptions, 'newline'>) {
+	const newline = opts?.newline ?? '\n';
+	const moves = pgn.split(newline).flatMap((line) => {
+		return line.replace(/\d+\.+/g, '').split(' ');
+	});
+
+	return moves;
 }
