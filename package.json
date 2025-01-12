@@ -36,7 +36,7 @@
 		"build": "tsup",
 		"start": "node dist/index.js",
 		"typecheck": "tsc --noEmit",
-		"format:check": "prettier --list-different --check \"**/*.{ts,tsx}\" --cache",
+		"format:check": "prettier --check \"**/*.{ts,tsx}\" --cache",
 		"format": "prettier --list-different --write \"**/*.{ts,tsx}\" --cache",
 		"release": "changeset version",
 		"pub:beta": "pnpm build && pnpm publish --no-git-checks --access public --tag beta",
