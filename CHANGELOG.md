@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.0.1
+
+### Patch Changes
+
+- dd87fbb: nothing's actually changing just bumping version
+
 ## 3.0.0
 
 ### Major Changes
