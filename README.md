@@ -105,7 +105,7 @@ export const FEN_CODES  = { 帥: 'm', ..., 弓: 'a', 筒: 'c', 謀: 't' }
 ### Constructor: Gungi([ fen ])
 
 The Gungi() constructor takes an optional parameter which specifies the board configuration in a special variant of [Forsyth-Edwards Notation (FEN)](https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation).
-Throws an exception if an invalid FEN string is provided. See specification differences [here](src/gungi/fen.ts)
+Throws an exception if an invalid FEN string is provided. See specification differences [here](src/gungi/fen.ts).
 
 ```ts
 import { Gungi } from 'gungi.js'
