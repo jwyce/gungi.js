@@ -1,6 +1,6 @@
 # gungi.js
 
-[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/jwyce/gungi.js/node.js.yml)](https://github.com/jwyce/gungi.js/actions)
+[![GitHub Workflow Status](https://img.shields.io/github/actions/workflow/status/jwyce/gungi.js/ci.yml)](https://github.com/jwyce/gungi.js/actions)
 [![npm](https://img.shields.io/npm/v/gungi.js?color=blue)](https://www.npmjs.com/package/gungi.js)
 [![npm](https://img.shields.io/npm/dm/gungi.js)](https://www.npmjs.com/package/gungi.js)
 
