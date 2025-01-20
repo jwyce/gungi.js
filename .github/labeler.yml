@@ -1,0 +1,5 @@
+'📌 area: lib':
+  - any: ['src/**/*']
+
+'📌 area: ci':
+  - any: ['.github/**/*']

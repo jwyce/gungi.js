@@ -65,7 +65,7 @@ export const MUSKETEER = '筒';
 export const TACTICIAN = '謀';
 
 export const SQUARES = Array.from({ length: 9 }, (_, x) => x + 1).flatMap((x) =>
-	Array.from({ length: 9 }, (_, y) => `${x}-${y + 1}`)
+	Array.from({ length: 9 }, (_, y) => `${x}-${9 - y}`)
 );
 
 export type Color = 'b' | 'w';
