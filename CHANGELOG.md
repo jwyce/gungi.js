@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.0.2
+
+### Patch Changes
+
+- 97d54b3: fix square list order
+
 ## 3.0.1
 
 ### Patch Changes
