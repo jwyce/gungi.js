@@ -201,7 +201,7 @@ export function generateArata(piece: HandPiece, fen: string) {
 			rank += step
 		) {
 			const tops = Array.from({ length: 9 }).map((_, i) =>
-				getTop(`${rank}-${i}`, board)
+				getTop(`${rank}-${i + 1}`, board)
 			);
 			if (tops.some((p) => p && p.color === piece.color)) {
 				ranks.push(...maybe, rank);
