@@ -233,7 +233,6 @@ export class Gungi {
 
 	load(fen: string) {
 		this.#initializeState(parseFEN(fen));
-		this.#history = [];
 	}
 
 	loadPgn(
