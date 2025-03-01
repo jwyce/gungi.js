@@ -60,9 +60,12 @@ export function encodePGN(history: Move[], opts?: PGNOptions) {
 
 export function parsePGN(pgn: string, opts?: Pick<PGNOptions, 'newline'>) {
 	const newline = opts?.newline ?? '\n';
-	const moves = pgn.split(newline).flatMap((line) => {
-		return line.replace(/\d+\.+/g, '').split(' ');
-	});
+	const moves = pgn
+		.split(newline)
+		.flatMap((line) => {
+			return line.replace(/\d+\.+/g, '').split(' ');
+		})
+		.filter((move) => move !== '');
 
 	return moves;
 }
