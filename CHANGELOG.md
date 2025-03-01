@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.0.6
+
+### Patch Changes
+
+- 771f68b: load pgn was not filtering out empty moves when parsing pgn
+
 ## 3.0.5
 
 ### Patch Changes
