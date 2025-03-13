@@ -129,13 +129,16 @@ export function generateMovesForSquare(square: string, fen: string) {
 		const t = get(s, board);
 
 		const maxTier = mode === 'advanced' ? 3 : 2;
+		const marshalCanStack = ['advanced', 'intermediate'].includes(mode);
 
 		if (!p || !t) {
 			acc.push(createMove(piece, `${s}-1`, fen, 'route'));
 		} else {
 			// tsuke
 			if (p.tier < maxTier && p.type !== pieceType.marshal) {
-				acc.push(createMove(piece, `${s}-${p.tier + 1}`, fen, 'tsuke'));
+				if (piece.type !== pieceType.marshal || marshalCanStack) {
+					acc.push(createMove(piece, `${s}-${p.tier + 1}`, fen, 'tsuke'));
+				}
 
 				// betrayal
 				if (piece.type === pieceType.tactician && p.color !== piece.color) {
