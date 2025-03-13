@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.0.7
+
+### Patch Changes
+
+- 4c8fe60: Marshals should not be able to stack in intro and beginner game modes
+
 ## 3.0.6
 
 ### Patch Changes
