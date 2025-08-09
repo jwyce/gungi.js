@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
 	ADVANCED_POSITION,
-	BEGINNNER_POSITION,
+	BEGINNER_POSITION,
 	encodeFEN,
 	INTERMEDIATE_POSITION,
 	INTRO_POSITION,
@@ -38,8 +38,8 @@ describe('parseFEN', () => {
 		});
 	});
 
-	it('should correctly parse the BEGINNNER_POSITION string', () => {
-		const result = parseFEN(BEGINNNER_POSITION);
+	it('should correctly parse the BEGINNER_POSITION string', () => {
+		const result = parseFEN(BEGINNER_POSITION);
 
 		expect(result.turn).toBe('w');
 		expect(result.mode).toBe('beginner' as SetupMode);
@@ -265,7 +265,7 @@ describe('parseFEN', () => {
 
 describe('validateFen', () => {
 	it('should validate a correct FEN string', () => {
-		const result = validateFen(BEGINNNER_POSITION);
+		const result = validateFen(BEGINNER_POSITION);
 		expect(result.ok).toBe(true);
 	});
 

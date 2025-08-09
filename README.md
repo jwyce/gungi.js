@@ -82,7 +82,7 @@ export const TACTICIAN = '謀';
 // starting positions (in FEN)
 export const INTRO_POSITION =
 	'3img3/1s2n2s1/d1fwdwf1d/9/9/9/D1FWDWF1D/1S2N2S1/3GMI3 J2N2R2D1/j2n2r2d1 w 0 - 1';
-export const BEGINNNER_POSITION =
+export const BEGINNER_POSITION =
 	'3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 - 1';
 export const INTERMEDIATE_POSITION =
 	'9/9/9/9/9/9/9/9/9 M1G1I1J2W2N3R2S2F2D4C1A2K1T1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 2 wb 1';
@@ -125,7 +125,7 @@ let gungi = new Gungi(
 Returns a string containing an ASCII diagram of the current position with ANSI colors. Options is an optional parameter which may contain a 'english' flag to display the pieces in English symbols.
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 
 // make some moves
 gungi.move('槍(8-5-1)(7-5-2)付');
@@ -232,7 +232,7 @@ gungi.board();
 Returns a list of pieces captured. Color is an optional parameter to filter pieces by player color
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 gungi.move('新小(7-5-2)付');
 gungi.move('兵(3-5-1)(4-5-1)');
 gungi.move('新槍(7-4-2)付');
@@ -258,7 +258,7 @@ gungi.fen();
 Returns the FEN string for the current position.
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 
 // make some moves
 gungi.move('槍(8-5-1)(7-5-2)付');
@@ -274,7 +274,7 @@ gungi.fen();
 Returns the tower of pieces on the square. Returns `undefined` if the square is empty.
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 
 gungi.move('砦(7-3-1)(7-4-2)付');
 
@@ -304,7 +304,7 @@ gungi.getDraftingRights('b');
 Returns the top piece of the tower on the square. Returns `undefined` if the square is empty.
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 
 gungi.get('7-4');
 // -> [{ square: '7-4', tier: 1, type: '侍', color: 'w' }]
@@ -317,7 +317,7 @@ gungi.get('7-3');
 Returns a list of pieces in players' hand. Color is an optional parameter to filter pieces by player color
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 
 // make some moves
 gungi.move('槍(8-5-1)(7-5-2)付');
@@ -350,7 +350,7 @@ Returns a list containing the moves of the current game. Options is an optional 
 A FEN string of the position prior to the move being made is added to the verbose history output.
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 gungi.move('新小(7-5-2)付');
 gungi.move('兵(3-5-1)(4-5-1)');
 gungi.move('新槍(7-4-2)付');
@@ -700,7 +700,7 @@ The `before` and `after` keys contain the FEN of the position before and after t
 Returns the game in PGN format. Options is an optional parameter which may include max width and/or a newline character settings.
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 gungi.move('槍(8-5-1)(7-5-2)付');
 gungi.move('新馬(1-7-1)');
 gungi.move('新忍(8-7-2)付');
@@ -734,7 +734,7 @@ gungi.turn();
 Takeback the last half-move, returning a move object if successful, otherwise null.
 
 ```ts
-const gungi = new Gungi(BEGINNNER_POSITION);
+const gungi = new Gungi(BEGINNER_POSITION);
 
 gungi.fen();
 // -> '3img3/1ra1n1as1/d1fwdwf1d/9/9/9/D1FWDWF1D/1SA1N1AR1/3GMI3 J2N2S1R1D1/j2n2s1r1d1 w 1 - 1'
