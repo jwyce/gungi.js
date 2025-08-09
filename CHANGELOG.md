@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.0.8
+
+### Patch Changes
+
+- 7c59cf7: technically a breaking change but fixes typo of constant BEGINNNER_POSTION to be BEGINNER_POSITION
+
 ## 3.0.7
 
 ### Patch Changes
