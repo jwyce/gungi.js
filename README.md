@@ -8,7 +8,7 @@ gungi.js is a TypeScript gungi library for the strategy game from the HUNTER×HU
 Credit to these two reddit posts from [u/magickirua](https://www.reddit.com/r/HunterXHunter/comments/uqrtct/gungi_the_official_rules) and [u/MythicalTenshi](https://www.reddit.com/r/HunterXHunter/comments/105f43g/comment/j3evkkq)
 which translate the rule book.
 
-gungi.js is used for move generation/validation, piece placement/movement, and endgame detection - basically everything but the AI.
+gungi.js is used for move generation/validation, piece placement/movement, piece ID tracking, and endgame detection - basically everything but the AI.
 
 ## Installation
 
@@ -299,6 +299,19 @@ gungi.getDraftingRights('b');
 // -> true
 ```
 
+### .getBoardWithIds()
+
+Returns a copy of the 3D board tensor with all piece ID information included. Each piece object includes an `id` field with its unique identifier.
+
+```ts
+const gungi = new Gungi(BEGINNER_POSITION);
+const boardWithIds = gungi.getBoardWithIds();
+
+// Access piece with ID
+const piece = boardWithIds[6][0][0]; // 7-1 square
+// -> { square: '7-1', tier: 1, type: '兵', color: 'w', id: '兵-w-1' }
+```
+
 ### .getTop(square)
 
 Returns the top piece of the tower on the square. Returns `undefined` if the square is empty.
@@ -309,6 +322,89 @@ const gungi = new Gungi(BEGINNER_POSITION);
 gungi.get('7-4');
 // -> [{ square: '7-4', tier: 1, type: '侍', color: 'w' }]
 gungi.get('7-3');
+// -> undefined
+```
+
+### .getHandPieceId(type, color, index)
+
+Returns the ID of a specific hand piece by type, color, and index. Useful for selecting which specific piece to play when multiple pieces of the same type are in hand.
+
+```ts
+const gungi = new Gungi(BEGINNER_POSITION);
+
+// Get ID of first major general in white's hand
+const firstId = gungi.getHandPieceId('小', 'w', 0);
+// -> '小-w-1'
+
+// Get ID of second major general (if exists)
+const secondId = gungi.getHandPieceId('小', 'w', 1);
+// -> '小-w-2' or undefined if only one exists
+```
+
+### .getHandPieceIds(type?, color?)
+
+Returns an array of all hand piece IDs. Can optionally filter by piece type and color.
+
+```ts
+const gungi = new Gungi(BEGINNER_POSITION);
+
+// Get all white major general IDs
+const whiteGeneralIds = gungi.getHandPieceIds('小', 'w');
+// -> ['小-w-1', '小-w-2']
+
+// Get all hand piece IDs
+const allHandIds = gungi.getHandPieceIds();
+// -> ['小-w-1', '小-w-2', '槍-w-1', ..., '小-b-1', '小-b-2', ...]
+```
+
+### .getHandWithIds(color?)
+
+Returns hand pieces with individual ID arrays included. Similar to `.hand()` but includes the `ids` field for each hand piece.
+
+```ts
+const gungi = new Gungi(BEGINNER_POSITION);
+
+const whiteHandWithIds = gungi.getHandWithIds('w');
+// -> [
+//      { type: '小', count: 2, color: 'w', ids: ['小-w-1', '小-w-2'] },
+//      { type: '槍', count: 3, color: 'w', ids: ['槍-w-1', '槍-w-2', '槍-w-3'] },
+//      ...
+//    ]
+```
+
+### .getPieceById(id)
+
+Returns the piece object with the specified ID. Searches the entire board to find the piece.
+
+```ts
+const gungi = new Gungi(BEGINNER_POSITION);
+
+// Find piece by its unique ID
+const piece = gungi.getPieceById('兵-w-1');
+// -> { square: '7-1', tier: 1, type: '兵', color: 'w', id: '兵-w-1' }
+
+// Returns undefined if piece doesn't exist or was captured
+const nonexistent = gungi.getPieceById('兵-w-999');
+// -> undefined
+```
+
+### .getPieceId(square, tier?)
+
+Returns the unique ID of the piece at the specified location. If tier is omitted, returns the ID of the top piece.
+
+```ts
+const gungi = new Gungi(BEGINNER_POSITION);
+
+// Get ID of top piece at square
+const topPieceId = gungi.getPieceId('7-1');
+// -> '兵-w-1'
+
+// Get ID of piece at specific tier
+const specificTierId = gungi.getPieceId('7-4', 2); // After stacking
+// -> '砦-w-1'
+
+// Returns undefined if no piece at location
+const emptyId = gungi.getPieceId('5-5');
 // -> undefined
 ```
 
