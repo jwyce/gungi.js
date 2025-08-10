@@ -12,11 +12,13 @@ export type Piece = {
 	tier: number;
 	type: PieceType;
 	color: Color;
+	id?: string;
 };
 export type HandPiece = {
 	type: PieceType;
 	color: Color;
 	count: number;
+	ids?: string[];
 };
 
 export type Move = {
@@ -327,4 +329,226 @@ export function isGameOver(board: (Piece | null)[][][]) {
 		.flat()
 		.filter((p) => p?.type === '帥');
 	return marshal.length !== 2;
+}
+
+// ID generation utilities
+export function generatePieceId(
+	type: PieceType,
+	color: Color,
+	counter: number
+): string {
+	return `${type}-${color}-${counter}`;
+}
+
+export function parsePieceId(
+	id: string
+): { type: PieceType; color: Color; number: number } | null {
+	const parts = id.split('-');
+	if (parts.length !== 3) return null;
+
+	const [type, color, numberStr] = parts;
+	const number = parseInt(numberStr, 10);
+
+	if (isNaN(number) || !['b', 'w'].includes(color)) return null;
+
+	return {
+		type: type as PieceType,
+		color: color as Color,
+		number,
+	};
+}
+
+// Piece ID Registry for tracking piece identities across moves
+export class PieceIdRegistry {
+	private pieceIdMap = new Map<string, string>(); // square+tier -> ID
+	private handIdMap = new Map<string, string[]>(); // type+color -> ID[]
+	private idCounters = new Map<string, number>(); // type+color -> counter
+	private reverseMap = new Map<string, string>(); // ID -> square+tier
+
+	constructor() {
+		this.initializeCounters();
+	}
+
+	private initializeCounters() {
+		const pieceTypes: PieceType[] = [
+			'帥',
+			'大',
+			'中',
+			'小',
+			'侍',
+			'槍',
+			'馬',
+			'忍',
+			'砦',
+			'兵',
+			'砲',
+			'弓',
+			'筒',
+			'謀',
+		];
+		const colors: Color[] = ['w', 'b'];
+
+		for (const type of pieceTypes) {
+			for (const color of colors) {
+				const key = `${type}-${color}`;
+				this.idCounters.set(key, 0);
+				this.handIdMap.set(key, []);
+			}
+		}
+	}
+
+	private getNextId(type: PieceType, color: Color): string {
+		const key = `${type}-${color}`;
+		const current = this.idCounters.get(key) ?? 0;
+		const next = current + 1;
+		this.idCounters.set(key, next);
+		return generatePieceId(type, color, next);
+	}
+
+	// Board piece management
+	setPieceId(square: string, tier: number, id: string): void {
+		const key = `${square}-${tier}`;
+		this.pieceIdMap.set(key, id);
+		this.reverseMap.set(id, key);
+	}
+
+	getPieceId(square: string, tier: number): string | undefined {
+		const key = `${square}-${tier}`;
+		return this.pieceIdMap.get(key);
+	}
+
+	removePieceId(square: string, tier: number): string | undefined {
+		const key = `${square}-${tier}`;
+		const id = this.pieceIdMap.get(key);
+		if (id) {
+			this.pieceIdMap.delete(key);
+			this.reverseMap.delete(id);
+		}
+		return id;
+	}
+
+	movePiece(
+		fromSquare: string,
+		fromTier: number,
+		toSquare: string,
+		toTier: number
+	): void {
+		const id = this.removePieceId(fromSquare, fromTier);
+		if (id) {
+			this.setPieceId(toSquare, toTier, id);
+		}
+	}
+
+	// Hand piece management
+	addToHand(type: PieceType, color: Color, ids: string[]): void {
+		const key = `${type}-${color}`;
+		const existing = this.handIdMap.get(key) ?? [];
+		this.handIdMap.set(key, [...existing, ...ids]);
+	}
+
+	removeFromHand(type: PieceType, color: Color, count: number = 1): string[] {
+		const key = `${type}-${color}`;
+		const existing = this.handIdMap.get(key) ?? [];
+		const removed = existing.splice(0, count);
+		return removed;
+	}
+
+	getHandIds(type: PieceType, color: Color): string[] {
+		const key = `${type}-${color}`;
+		return [...(this.handIdMap.get(key) ?? [])];
+	}
+
+	// Piece creation with ID generation
+	createPieceWithId(
+		type: PieceType,
+		color: Color,
+		square: string,
+		tier: number
+	): Piece {
+		const id = this.getNextId(type, color);
+		this.setPieceId(square, tier, id);
+
+		return {
+			type,
+			color,
+			square,
+			tier,
+			id,
+		};
+	}
+
+	// Convert captured pieces to hand
+	capturePieces(capturedPieces: Piece[]): void {
+		for (const piece of capturedPieces) {
+			if (piece.id) {
+				// Remove from board
+				this.removePieceId(piece.square, piece.tier);
+				// Add to opposing hand
+				const oppositeColor = piece.color === 'w' ? 'b' : 'w';
+				this.addToHand(piece.type, oppositeColor, [piece.id]);
+			}
+		}
+	}
+
+	// Handle betrayal (piece color change)
+	betrayPieces(pieces: Piece[]): Piece[] {
+		return pieces.map((piece) => {
+			if (piece.id) {
+				// Generate new ID for the converted piece
+				const newColor = piece.color === 'w' ? 'b' : 'w';
+				const newId = this.getNextId(piece.type, newColor);
+
+				// Update registries
+				this.removePieceId(piece.square, piece.tier);
+				this.setPieceId(piece.square, piece.tier, newId);
+
+				return {
+					...piece,
+					color: newColor,
+					id: newId,
+				};
+			}
+			return piece;
+		});
+	}
+
+	// Sync with board state after FEN reinitialization
+	syncWithBoard(board: Board, hand: HandPiece[]): void {
+		// Clear current mappings
+		this.pieceIdMap.clear();
+		this.reverseMap.clear();
+
+		// Rebuild from board
+		for (let rank = 0; rank < 9; rank++) {
+			for (let file = 0; file < 9; file++) {
+				const tower = board[rank][file];
+				if (tower && tower[0]) {
+					for (let tier = 0; tier < tower.length; tier++) {
+						const piece = tower[tier];
+						if (piece && piece.id) {
+							this.setPieceId(piece.square, piece.tier, piece.id);
+						}
+					}
+				}
+			}
+		}
+
+		// Rebuild hand mappings
+		for (const handPiece of hand) {
+			if (handPiece.ids && handPiece.ids.length > 0) {
+				const key = `${handPiece.type}-${handPiece.color}`;
+				this.handIdMap.set(key, [...handPiece.ids]);
+			}
+		}
+	}
+
+	// Get registry state for debugging
+	getRegistryState() {
+		return {
+			pieceIdMap: new Map(this.pieceIdMap),
+			handIdMap: new Map(this.handIdMap),
+			idCounters: new Map(this.idCounters),
+			reverseMap: new Map(this.reverseMap),
+		};
+	}
 }
