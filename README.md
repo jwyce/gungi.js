@@ -162,7 +162,7 @@ gungi.ascii({ english: true });
 
 ### .board()
 
-Returns a 3D tensor representation of the current position (9x9x3 array). Empty squares are represented by `null`.
+Returns a 3D tensor representation of the current position (9x9x3 array). Empty squares are represented by `null`. Each piece includes an optional `id` property for stable tracking across moves.
 
 ```ts
 const gungi = new Gungi();
@@ -171,30 +171,30 @@ gungi.board();
 // -> [[[null],
 //  	[null],
 //    	[null],
-//    	[{ square: '1-6', tier: 1, type: '中', color: 'b' }],
-//    	[{ square: '1-5', tier: 1, type: '帥', color: 'b' }],
-//    	[{ square: '1-4', tier: 1, type: '大', color: 'b' }],
+//    	[{ square: '1-6', tier: 1, type: '中', color: 'b', id: 'b-中-1' }],
+//    	[{ square: '1-5', tier: 1, type: '帥', color: 'b', id: 'b-帥-1' }],
+//    	[{ square: '1-4', tier: 1, type: '大', color: 'b', id: 'b-大-1' }],
 //    	[null],
 //    	[null],
 //    	[null]],
 //     [[null],
-//    	[{ square: '2-8', tier: 1, type: '忍', color: 'b' }],
+//    	[{ square: '2-8', tier: 1, type: '忍', color: 'b', id: 'b-忍-2' }],
 //    	[null],
 //    	[null],
-//    	[{ square: '2-5', tier: 1, type: '槍', color: 'b' }],
+//    	[{ square: '2-5', tier: 1, type: '槍', color: 'b', id: 'b-槍-1' }],
 //    	[null],
 //    	[null],
-//    	[{ square: '2-2', tier: 1, type: '忍', color: 'b' }],
+//    	[{ square: '2-2', tier: 1, type: '忍', color: 'b', id: 'b-忍-1' }],
 //    	[null]],
-//    [[{ square: '3-9', tier: 1, type: '兵', color: 'b' }],
+//    [[{ square: '3-9', tier: 1, type: '兵', color: 'b', id: 'b-兵-3' }],
 //    	[null],
-//    	[{ square: '3-7', tier: 1, type: '砦', color: 'b' }],
-//    	[{ square: '3-6', tier: 1, type: '侍', color: 'b' }],
-//    	[{ square: '3-5', tier: 1, type: '兵', color: 'b' }],
-//    	[{ square: '3-4', tier: 1, type: '侍', color: 'b' }],
-//    	[{ square: '3-3', tier: 1, type: '砦', color: 'b' }],
+//    	[{ square: '3-7', tier: 1, type: '砦', color: 'b', id: 'b-砦-2' }],
+//    	[{ square: '3-6', tier: 1, type: '侍', color: 'b', id: 'b-侍-2' }],
+//    	[{ square: '3-5', tier: 1, type: '兵', color: 'b', id: 'b-兵-2' }],
+//    	[{ square: '3-4', tier: 1, type: '侍', color: 'b', id: 'b-侍-1' }],
+//    	[{ square: '3-3', tier: 1, type: '砦', color: 'b', id: 'b-砦-1' }],
 //    	[null],
-//    	[{ square: '3-1', tier: 1, type: '兵', color: 'b' }]],
+//    	[{ square: '3-1', tier: 1, type: '兵', color: 'b', id: 'b-兵-1' }]],
 //    [...],
 //    [...],
 //    [...],
@@ -279,7 +279,7 @@ const gungi = new Gungi(BEGINNER_POSITION);
 gungi.move('砦(7-3-1)(7-4-2)付');
 
 gungi.get('7-4');
-// -> [{ square: '7-4', tier: 1, type: '侍', color: 'w' }, { square: '7-4', tier: 2, type: '砦', color: 'w' }]
+// -> [{ square: '7-4', tier: 1, type: '侍', color: 'w', id: 'w-侍-1' }, { square: '7-4', tier: 2, type: '砦', color: 'w', id: 'w-砦-1' }]
 gungi.get('7-3');
 // -> undefined
 ```
@@ -314,7 +314,7 @@ gungi.get('7-3');
 
 ### .hand(color)
 
-Returns a list of pieces in players' hand. Color is an optional parameter to filter pieces by player color
+Returns a list of pieces in players' hand. Color is an optional parameter to filter pieces by player color. Each hand piece includes an optional `id` property for stable tracking across moves.
 
 ```ts
 const gungi = new Gungi(BEGINNER_POSITION);
@@ -326,21 +326,21 @@ gungi.move('新忍(8-7-2)付');
 
 gungi.hand();
 // -> [
-//      { type: '小', count: 2, color: 'w' },
-//      { type: '槍', count: 2, color: 'w' },
-//      { type: '馬', count: 1, color: 'w' },
-//      { type: '兵', count: 1, color: 'w' },
-//      { type: '小', count: 2, color: 'b' },
-//      { type: '槍', count: 2, color: 'b' },
-//      { type: '忍', count: 1, color: 'b' },
-//      { type: '兵', count: 1, color: 'b' }
+//      { type: '小', count: 2, color: 'w', id: 'w-小-1' },
+//      { type: '槍', count: 2, color: 'w', id: 'w-槍-1' },
+//      { type: '馬', count: 1, color: 'w', id: 'w-馬-1' },
+//      { type: '兵', count: 1, color: 'w', id: 'w-兵-1' },
+//      { type: '小', count: 2, color: 'b', id: 'b-小-1' },
+//      { type: '槍', count: 2, color: 'b', id: 'b-槍-1' },
+//      { type: '忍', count: 1, color: 'b', id: 'b-忍-1' },
+//      { type: '兵', count: 1, color: 'b', id: 'b-兵-1' }
 //    ]
 gungi.hand('w');
 //    [
-//      { type: '小', count: 2, color: 'w' },
-//      { type: '槍', count: 2, color: 'w' },
-//      { type: '馬', count: 1, color: 'w' },
-//      { type: '兵', count: 1, color: 'w' }
+//      { type: '小', count: 2, color: 'w', id: 'w-小-1' },
+//      { type: '槍', count: 2, color: 'w', id: 'w-槍-1' },
+//      { type: '馬', count: 1, color: 'w', id: 'w-馬-1' },
+//      { type: '兵', count: 1, color: 'w', id: 'w-兵-1' }
 //    ]
 ```
 

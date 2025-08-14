@@ -12,11 +12,13 @@ export type Piece = {
 	tier: number;
 	type: PieceType;
 	color: Color;
+	id?: string;
 };
 export type HandPiece = {
 	type: PieceType;
 	color: Color;
 	count: number;
+	id?: string;
 };
 
 export type Move = {
