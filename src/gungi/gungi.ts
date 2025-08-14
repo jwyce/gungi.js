@@ -9,9 +9,9 @@ import {
 	parseFEN,
 	validateFen,
 } from './fen';
-import { assignPieceIds, assignPieceIdsWithState } from './piece-ids';
 import { generateArata, generateMovesForSquare } from './move_gen';
 import { encodePGN, parsePGN, PGNOptions } from './pgn';
+import { assignPieceIds, assignPieceIdsWithState } from './piece-ids';
 import {
 	ARATA,
 	ARCHER,
@@ -98,14 +98,14 @@ export class Gungi {
 	#initializeState(fen: string) {
 		// Assign IDs using the previous state for stability
 		const stateWithIds = assignPieceIdsWithState(fen, this.#previousState);
-		
+
 		this.#board = stateWithIds.board;
 		this.#hand = stateWithIds.hand;
 		this.#turn = stateWithIds.turn;
 		this.#moveNumber = stateWithIds.moveNumber;
 		this.#drafting = stateWithIds.drafting;
 		this.#mode = stateWithIds.mode;
-		
+
 		// Update the previous state for next time
 		this.#previousFen = fen;
 		this.#previousState = stateWithIds;
