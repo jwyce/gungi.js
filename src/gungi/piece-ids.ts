@@ -32,7 +32,8 @@ export function assignPieceIds(
 
 	if (!previousFen) {
 		// Base case: pure canonical assignment
-		return assignCanonically(currentState);
+		const result = assignCanonically(currentState);
+		return ensureUniqueIds(result, true); // Silent for canonical assignment
 	}
 
 	// Detect what changed between the FENs
@@ -42,10 +43,13 @@ export function assignPieceIds(
 		// Preserve the moving piece's ID
 		// IMPORTANT: Parse previous FEN directly, don't recurse to avoid corruption
 		const previousState = parseFEN(previousFen);
-		return preserveMovingPieceId(currentState, previousState, changes);
+		const result = preserveMovingPieceId(currentState, previousState, changes);
+		// Only apply safeguard if there are actual duplicates, don't force canonical reassignment
+		return ensureUniqueIdsLenient(result);
 	} else {
 		// Fall back to canonical for complex changes
-		return assignCanonically(currentState);
+		const result = assignCanonically(currentState);
+		return ensureUniqueIds(result, true); // Silent for canonical assignment
 	}
 }
 
@@ -61,7 +65,8 @@ export function assignPieceIdsWithState(
 
 	if (!previousState) {
 		// Base case: pure canonical assignment
-		return assignCanonically(currentState);
+		const result = assignCanonically(currentState);
+		return ensureUniqueIds(result, true); // Silent for canonical assignment
 	}
 
 	// Get the previous FEN to detect changes
@@ -79,10 +84,13 @@ export function assignPieceIdsWithState(
 
 	if (changes.isSingleMove && changes.movedPiece) {
 		// Preserve the moving piece's ID using the state with IDs
-		return preserveMovingPieceId(currentState, previousState, changes);
+		const result = preserveMovingPieceId(currentState, previousState, changes);
+		// Only apply safeguard if there are actual duplicates, don't force canonical reassignment
+		return ensureUniqueIdsLenient(result);
 	} else {
 		// Fall back to canonical for complex changes
-		return assignCanonically(currentState);
+		const result = assignCanonically(currentState);
+		return ensureUniqueIds(result, true); // Silent for canonical assignment
 	}
 }
 
@@ -382,19 +390,7 @@ function preserveMovingPieceId(
 		);
 
 		if (previousHandPiece?.id) {
-			// Find the new board piece at the target square and give it the hand piece's ID
-			const boardPiece = findPieceAtSquare(
-				result.board,
-				toSquare,
-				piece.type,
-				piece.color,
-				piece.tier
-			);
-			if (boardPiece) {
-				boardPiece.id = previousHandPiece.id;
-			}
-
-			// Update the hand piece count but keep its base ID structure
+			// Update the hand piece count but keep its base ID structure for stability
 			const newHandPiece = result.hand.find(
 				(hp) => hp.type === piece.type && hp.color === piece.color
 			);
@@ -549,7 +545,7 @@ function preserveAllPiecesOfType(
 function preserveNonMovingPiecesOfType(
 	currentGroup: { boardPieces: Piece[]; handPieces: HandPiece[] },
 	prevGroup: { boardPieces: Piece[]; handPieces: HandPiece[] },
-	fromSquare?: string,
+	_fromSquare?: string,
 	toSquare?: string,
 	isArata?: boolean
 ): void {
@@ -605,34 +601,6 @@ function preserveNonMovingPiecesOfType(
 }
 
 /**
- * Get all board and hand pieces of a specific type and color
- */
-function getAllPiecesOfType(state: ParsedFEN, type: PieceType, color: Color) {
-	const boardPieces: Piece[] = [];
-	const handPieces: HandPiece[] = [];
-
-	// Collect board pieces
-	for (const rank of state.board) {
-		for (const file of rank) {
-			for (const piece of file) {
-				if (piece && piece.type === type && piece.color === color) {
-					boardPieces.push(piece);
-				}
-			}
-		}
-	}
-
-	// Collect hand pieces
-	for (const handPiece of state.hand) {
-		if (handPiece.type === type && handPiece.color === color) {
-			handPieces.push(handPiece);
-		}
-	}
-
-	return { boardPieces, handPieces };
-}
-
-/**
  * Groups pieces by type and color for ID assignment
  */
 function getPieceInventory(board: Board, hand: HandPiece[]): PieceInventory {
@@ -683,21 +651,239 @@ function applyCanonicalToMissingIds(state: ParsedFEN): void {
 			...group.handPieces,
 		];
 
+		// First, collect all existing IDs to track what numbers are already used
+		const usedNumbers = new Set<number>();
+		for (const piece of allPieces) {
+			if (piece.id) {
+				const match = piece.id.match(
+					new RegExp(`${color}-${pieceType}-(\\d+)$`)
+				);
+				if (match) {
+					usedNumbers.add(parseInt(match[1], 10));
+				}
+			}
+		}
+
 		// Only assign IDs to pieces that don't already have them
 		let nextNumber = 1;
 		for (const piece of allPieces) {
 			if (!piece.id) {
 				// Find the next available number
-				while (
-					allPieces.some((p) => p.id === `${color}-${pieceType}-${nextNumber}`)
-				) {
+				while (usedNumbers.has(nextNumber)) {
 					nextNumber++;
 				}
 				piece.id = `${color}-${pieceType}-${nextNumber}`;
+				usedNumbers.add(nextNumber);
 				nextNumber++;
 			}
 		}
 	}
+}
+
+/**
+ * Checks for duplicate piece IDs without fixing them
+ * Returns information about any duplicates found
+ */
+export function checkForDuplicateIds(state: ParsedFEN): {
+	hasDuplicates: boolean;
+	duplicates: string[];
+} {
+	const allIds = new Map<string, number>();
+	const duplicates: string[] = [];
+
+	// Count ID occurrences from board pieces
+	for (const rank of state.board) {
+		for (const file of rank) {
+			for (const piece of file) {
+				if (piece?.id) {
+					allIds.set(piece.id, (allIds.get(piece.id) || 0) + 1);
+				}
+			}
+		}
+	}
+
+	// Count ID occurrences from hand pieces
+	for (const handPiece of state.hand) {
+		if (handPiece.id) {
+			allIds.set(handPiece.id, (allIds.get(handPiece.id) || 0) + 1);
+		}
+	}
+
+	// Find duplicates
+	for (const [id, count] of allIds) {
+		if (count > 1) {
+			duplicates.push(id);
+		}
+	}
+
+	return {
+		hasDuplicates: duplicates.length > 0,
+		duplicates,
+	};
+}
+
+/**
+ * Lenient version that only fixes actual duplicates without forcing complete reassignment
+ * Preserves ID stability for close FEN states
+ */
+function ensureUniqueIdsLenient(state: ParsedFEN): ParsedFEN {
+	const duplicateCheck = checkForDuplicateIds(state);
+
+	if (!duplicateCheck.hasDuplicates) {
+		return state; // No duplicates, return as-is to preserve stability
+	}
+
+	// Only fix actual duplicates by reassigning the minimal number of pieces
+	const allIds = new Map<
+		string,
+		Array<{ piece: Piece | HandPiece; location: string }>
+	>();
+
+	// Collect pieces with duplicate IDs
+	for (const rank of state.board) {
+		for (const file of rank) {
+			for (const piece of file) {
+				if (piece?.id && duplicateCheck.duplicates.includes(piece.id)) {
+					if (!allIds.has(piece.id)) {
+						allIds.set(piece.id, []);
+					}
+					allIds.get(piece.id)!.push({ piece, location: `board` });
+				}
+			}
+		}
+	}
+
+	for (const handPiece of state.hand) {
+		if (handPiece.id && duplicateCheck.duplicates.includes(handPiece.id)) {
+			if (!allIds.has(handPiece.id)) {
+				allIds.set(handPiece.id, []);
+			}
+			allIds.get(handPiece.id)!.push({ piece: handPiece, location: `hand` });
+		}
+	}
+
+	// Fix only the duplicates by reassigning subsequent pieces
+	for (const [id, pieces] of allIds) {
+		if (pieces.length > 1) {
+			// Keep first piece with original ID, reassign others minimally
+			for (let i = 1; i < pieces.length; i++) {
+				const { piece } = pieces[i];
+				const [color, type] = id.split('-').slice(0, 2) as [string, string];
+
+				// Find next available number for this type
+				let nextNum = 1;
+				while (true) {
+					const testId = `${color}-${type}-${nextNum}`;
+					const check = checkForDuplicateIds(state);
+					if (
+						!check.duplicates.includes(testId) &&
+						!getAllCurrentIds(state).includes(testId)
+					) {
+						piece.id = testId;
+						break;
+					}
+					nextNum++;
+				}
+			}
+		}
+	}
+
+	return state;
+}
+
+/**
+ * Helper to get all current IDs in state
+ */
+function getAllCurrentIds(state: ParsedFEN): string[] {
+	const ids: string[] = [];
+
+	for (const rank of state.board) {
+		for (const file of rank) {
+			for (const piece of file) {
+				if (piece?.id) ids.push(piece.id);
+			}
+		}
+	}
+
+	for (const handPiece of state.hand) {
+		if (handPiece.id) ids.push(handPiece.id);
+	}
+
+	return ids;
+}
+
+/**
+ * Ensures all piece IDs are unique by detecting and fixing duplicates
+ * This serves as a safety net against race conditions or other edge cases
+ */
+function ensureUniqueIds(state: ParsedFEN, silent = false): ParsedFEN {
+	// Collect all existing IDs to detect duplicates
+	const allIds = new Map<
+		string,
+		Array<{ piece: Piece | HandPiece; location: string }>
+	>();
+
+	// Scan board pieces
+	for (let rank = 0; rank < 9; rank++) {
+		for (let file = 0; file < 9; file++) {
+			const tower = state.board[rank][file];
+			for (let tier = 0; tier < tower.length; tier++) {
+				const piece = tower[tier];
+				if (piece?.id) {
+					if (!allIds.has(piece.id)) {
+						allIds.set(piece.id, []);
+					}
+					allIds.get(piece.id)!.push({
+						piece,
+						location: `board-${rank}-${file}-${tier}`,
+					});
+				}
+			}
+		}
+	}
+
+	// Scan hand pieces
+	for (let i = 0; i < state.hand.length; i++) {
+		const handPiece = state.hand[i];
+		if (handPiece.id) {
+			if (!allIds.has(handPiece.id)) {
+				allIds.set(handPiece.id, []);
+			}
+			allIds.get(handPiece.id)!.push({
+				piece: handPiece,
+				location: `hand-${i}`,
+			});
+		}
+	}
+
+	// Find and fix duplicates
+	let hasConflicts = false;
+	for (const [id, pieces] of allIds) {
+		if (pieces.length > 1) {
+			hasConflicts = true;
+			if (!silent) {
+				console.warn(
+					`Detected duplicate piece ID: ${id} used by ${pieces.length} pieces`
+				);
+			}
+
+			// Keep the first piece with the original ID, reassign others
+			for (let i = 1; i < pieces.length; i++) {
+				const { piece } = pieces[i];
+				piece.id = undefined; // Will be reassigned below
+			}
+		}
+	}
+
+	// If we found conflicts, do a complete reassignment to fix them
+	if (hasConflicts) {
+		if (!silent) {
+			console.warn('Reassigning all pieces without IDs to resolve conflicts');
+		}
+		applyCanonicalToMissingIds(state);
+	}
+
+	return state;
 }
 
 /**

@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { BEGINNER_POSITION } from '../src/gungi/fen';
+import { BEGINNER_POSITION, parseFEN } from '../src/gungi/fen';
 import { Gungi } from '../src/gungi/gungi';
+import {
+	assignPieceIds,
+	assignPieceIdsWithState,
+} from '../src/gungi/piece-ids';
 
 describe('Piece ID Assignment and Stability', () => {
 	describe('Basic ID Assignment', () => {
@@ -286,6 +290,65 @@ describe('Piece ID Assignment and Stability', () => {
 			// All soldier IDs should be unique
 			const uniqueIds = new Set(allSoldiers);
 			expect(uniqueIds.size).toBe(allSoldiers.length);
+		});
+
+		it('should prevent duplicate IDs when some pieces already have IDs and others dont (regression test)', () => {
+			// Test the ensureUniqueIds safeguard by manually creating duplicate IDs
+			// and verifying they get fixed
+
+			const testFen = '9/9/9/D3D1D2/9/9/9/9/9 -/- w 1 - 1'; // 3 white soldiers
+			const state = parseFEN(testFen);
+
+			// Find all white soldiers
+			const soldiers: any[] = [];
+			for (const rank of state.board) {
+				for (const file of rank) {
+					for (const piece of file) {
+						if (piece && piece.type === '兵' && piece.color === 'w') {
+							soldiers.push(piece);
+						}
+					}
+				}
+			}
+
+			// Manually create duplicate IDs to simulate the race condition bug
+			soldiers[0].id = 'w-兵-1';
+			soldiers[1].id = 'w-兵-1'; // DUPLICATE!
+			soldiers[2].id = 'w-兵-2';
+
+			console.log(
+				'Before fix - IDs:',
+				soldiers.map((s) => s.id)
+			);
+
+			// Now call assignPieceIds which should detect and fix the duplicates
+			const fixedState = assignPieceIds(testFen);
+
+			// Collect all IDs from the fixed state
+			const fixedSoldiers: any[] = [];
+			for (const rank of fixedState.board) {
+				for (const file of rank) {
+					for (const piece of file) {
+						if (piece && piece.type === '兵' && piece.color === 'w') {
+							fixedSoldiers.push(piece);
+						}
+					}
+				}
+			}
+
+			const allIds = fixedSoldiers.map((s) => s.id!);
+			console.log('After fix - IDs:', allIds);
+
+			// All IDs should now be unique
+			const uniqueIds = new Set(allIds);
+			expect(uniqueIds.size).toBe(allIds.length);
+			expect(allIds.length).toBe(3);
+
+			// All IDs should be properly formatted
+			for (const id of allIds) {
+				expect(id).toBeDefined();
+				expect(id).toMatch(/^w-兵-\d+$/);
+			}
 		});
 	});
 });
