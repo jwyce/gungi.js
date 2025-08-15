@@ -762,28 +762,82 @@ function ensureUniqueIdsLenient(state: ParsedFEN): ParsedFEN {
 		}
 	}
 
+	// Get all currently used IDs to avoid conflicts
+	const usedIds = new Set(getAllCurrentIds(state));
+
 	// Fix only the duplicates by reassigning subsequent pieces
 	for (const [id, pieces] of allIds) {
 		if (pieces.length > 1) {
-			// Keep first piece with original ID, reassign others minimally
+			const [color, type] = id.split('-').slice(0, 2) as [string, string];
+
+			// Sort pieces to preserve stability - prefer board pieces over hand pieces
+			// and within board pieces, prefer canonical order
+			pieces.sort((a, b) => {
+				// Board pieces come before hand pieces
+				if (a.location.startsWith('board') && b.location.startsWith('hand'))
+					return -1;
+				if (a.location.startsWith('hand') && b.location.startsWith('board'))
+					return 1;
+
+				// For board pieces, sort by canonical position
+				if (a.location.startsWith('board') && b.location.startsWith('board')) {
+					const aPiece = a.piece as Piece;
+					const bPiece = b.piece as Piece;
+					return comparePiecesCanonically(aPiece, bPiece);
+				}
+
+				// Hand pieces maintain original order
+				return 0;
+			});
+
+			// Keep first piece with original ID, reassign others with minimal changes
 			for (let i = 1; i < pieces.length; i++) {
 				const { piece } = pieces[i];
-				const [color, type] = id.split('-').slice(0, 2) as [string, string];
 
-				// Find next available number for this type
-				let nextNum = 1;
-				while (true) {
-					const testId = `${color}-${type}-${nextNum}`;
-					const check = checkForDuplicateIds(state);
-					if (
-						!check.duplicates.includes(testId) &&
-						!getAllCurrentIds(state).includes(testId)
-					) {
-						piece.id = testId;
+				// Try to find the closest available ID number to minimize changes
+				let bestId: string | null = null;
+				let bestDistance = Infinity;
+
+				// Extract the current number from the duplicate ID
+				const currentMatch = id.match(new RegExp(`${color}-${type}-(\\d+)$`));
+				const currentNum = currentMatch ? parseInt(currentMatch[1], 10) : 1;
+
+				// Search in both directions from the current number for the closest available ID
+				for (let offset = 1; offset <= 50; offset++) {
+					// Reasonable search limit
+					// Try numbers both above and below current
+					const candidates = [currentNum + offset, currentNum - offset].filter(
+						(n) => n > 0
+					);
+
+					for (const candidateNum of candidates) {
+						const candidateId = `${color}-${type}-${candidateNum}`;
+						if (!usedIds.has(candidateId)) {
+							const distance = Math.abs(candidateNum - currentNum);
+							if (distance < bestDistance) {
+								bestDistance = distance;
+								bestId = candidateId;
+							}
+						}
+					}
+
+					// If we found a good candidate close to the original, use it
+					if (bestId && bestDistance <= offset) {
 						break;
 					}
-					nextNum++;
 				}
+
+				// If we couldn't find a close ID, fall back to sequential assignment
+				if (!bestId) {
+					let nextNum = 1;
+					while (usedIds.has(`${color}-${type}-${nextNum}`)) {
+						nextNum++;
+					}
+					bestId = `${color}-${type}-${nextNum}`;
+				}
+
+				piece.id = bestId;
+				usedIds.add(bestId);
 			}
 		}
 	}
