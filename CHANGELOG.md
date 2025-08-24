@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.2.3
+
+### Patch Changes
+
+- aa2e600: 🆔 improved piece id tracking
+
 ## 3.2.2
 
 ### Patch Changes
