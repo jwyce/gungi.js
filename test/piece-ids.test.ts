@@ -1,10 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { BEGINNER_POSITION, parseFEN } from '../src/gungi/fen';
 import { Gungi } from '../src/gungi/gungi';
-import {
-	assignPieceIds,
-	assignPieceIdsWithState,
-} from '../src/gungi/piece-ids';
+import { assignPieceIdsWithState } from '../src/gungi/piece-ids';
 
 describe('Piece ID Assignment and Stability', () => {
 	describe('Basic ID Assignment', () => {
@@ -14,13 +11,13 @@ describe('Piece ID Assignment and Stability', () => {
 			// Check that board pieces have IDs
 			const soldier = gungi.getTop('7-5');
 			expect(soldier?.id).toBeDefined();
-			expect(soldier?.id).toMatch(/^w-兵-\d+$/);
+			expect(soldier?.id).toMatch(/^1-w-兵-\d+$/);
 
 			// Check that hand pieces have IDs
 			const handPieces = gungi.hand('w');
 			expect(handPieces.length).toBeGreaterThan(0);
 			expect(handPieces[0].id).toBeDefined();
-			expect(handPieces[0].id).toMatch(/^w-小-\d+$/);
+			expect(handPieces[0].id).toMatch(/^1-w-小-\d+$/);
 		});
 
 		it('should assign deterministic IDs for same position', () => {
@@ -264,11 +261,13 @@ describe('Piece ID Assignment and Stability', () => {
 
 			// Check board piece ID format
 			const piece = gungi.getTop('7-5');
-			expect(piece?.id).toMatch(/^[wb]-[兵帥大中小侍槍馬忍砦弓砲筒謀]-\d+$/);
+			expect(piece?.id).toMatch(/^1-[wb]-[兵帥大中小侍槍馬忍砦弓砲筒謀]-\d+$/);
 
 			// Check hand piece ID format
 			const handPiece = gungi.hand('w')[0];
-			expect(handPiece.id).toMatch(/^[wb]-[兵帥大中小侍槍馬忍砦弓砲筒謀]-\d+$/);
+			expect(handPiece.id).toMatch(
+				/^1-[wb]-[兵帥大中小侍槍馬忍砦弓砲筒謀]-\d+$/
+			);
 		});
 
 		it('should have unique IDs for different pieces of same type', () => {
@@ -312,17 +311,17 @@ describe('Piece ID Assignment and Stability', () => {
 			}
 
 			// Manually create duplicate IDs to simulate the race condition bug
-			soldiers[0].id = 'w-兵-1';
-			soldiers[1].id = 'w-兵-1'; // DUPLICATE!
-			soldiers[2].id = 'w-兵-2';
+			soldiers[0].id = '1-w-兵-1';
+			soldiers[1].id = '1-w-兵-1'; // DUPLICATE!
+			soldiers[2].id = '1-w-兵-2';
 
 			console.log(
 				'Before fix - IDs:',
 				soldiers.map((s) => s.id)
 			);
 
-			// Now call assignPieceIds which should detect and fix the duplicates
-			const fixedState = assignPieceIds(testFen);
+			// Now call assignPieceIdsWithState which should detect and fix the duplicates
+			const fixedState = assignPieceIdsWithState(testFen);
 
 			// Collect all IDs from the fixed state
 			const fixedSoldiers: any[] = [];
@@ -347,7 +346,7 @@ describe('Piece ID Assignment and Stability', () => {
 			// All IDs should be properly formatted
 			for (const id of allIds) {
 				expect(id).toBeDefined();
-				expect(id).toMatch(/^w-兵-\d+$/);
+				expect(id).toMatch(/^1-w-兵-\d+$/);
 			}
 		});
 	});
