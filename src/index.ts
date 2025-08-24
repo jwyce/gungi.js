@@ -1,15 +1,15 @@
-// import { ADVANCED_POSITION, Gungi } from './gungi';
+// import { ADVANCED_POSITION, Gungi } from "./gungi";
 
 export * from './gungi';
 
 // Uncomment below to run interactive game with piece ID visualization
 /*
-import { createInterface } from 'readline';
-import { BEGINNER_POSITION } from './gungi';
+import { createInterface } from "readline";
+import { BEGINNER_POSITION } from "./gungi";
 
 function clearTerminal() {
-	process.stdout.write('\x1b[2J');
-	process.stdout.write('\x1b[H');
+	process.stdout.write("\x1b[2J");
+	process.stdout.write("\x1b[H");
 }
 
 function formatPieceIds(gungi: Gungi): string {
@@ -32,7 +32,7 @@ function formatPieceIds(gungi: Gungi): string {
 						boardPieces.push({
 							square,
 							id: piece.id,
-							piece: `${piece.color}${piece.type}${piece.tier > 1 ? `(T${piece.tier})` : ''}`,
+							piece: `${piece.color}${piece.type}${piece.tier > 1 ? `(T${piece.tier})` : ""}`,
 						});
 					}
 				}
@@ -41,8 +41,8 @@ function formatPieceIds(gungi: Gungi): string {
 	}
 
 	// Collect hand pieces with IDs
-	const whiteHand = gungi.hand('w');
-	const blackHand = gungi.hand('b');
+	const whiteHand = gungi.hand("w");
+	const blackHand = gungi.hand("b");
 
 	for (const hp of [...whiteHand, ...blackHand]) {
 		if (hp.id && hp.count > 0) {
@@ -56,30 +56,30 @@ function formatPieceIds(gungi: Gungi): string {
 	}
 
 	// Format with each rank on its own line
-	let result = '\nPiece IDs:\n';
+	let result = "\nPiece IDs:\n";
 
 	// Board pieces - group by rank with each rank on its own line
 	const boardByRank: { [key: number]: string[] } = {};
 	for (const p of boardPieces) {
-		const rank = parseInt(p.square.split('-')[0]);
+		const rank = parseInt(p.square.split("-")[0]);
 		if (!boardByRank[rank]) boardByRank[rank] = [];
 		boardByRank[rank].push(`${p.square}=${p.id}`);
 	}
 
-	result += 'Board:\n';
+	result += "Board:\n";
 	for (let rank = 1; rank <= 9; rank++) {
 		if (boardByRank[rank] && boardByRank[rank].length > 0) {
-			result += `  R${rank}: ${boardByRank[rank].join(', ')}\n`;
+			result += `  R${rank}: ${boardByRank[rank].join(", ")}\n`;
 		}
 	}
 
 	// Hand pieces
 	if (handPieces.length > 0) {
-		result += 'Hand: ';
+		result += "Hand: ";
 		const handStrs = handPieces.map(
-			(hp) => `${hp.color}${hp.type}×${hp.count}=${hp.id}`
+			(hp) => `${hp.color}${hp.type}×${hp.count}=${hp.id}`,
 		);
-		result += handStrs.join(' ');
+		result += handStrs.join(" ");
 	}
 
 	return result;
@@ -92,7 +92,7 @@ function waitForEnter(): Promise<void> {
 	});
 
 	return new Promise((resolve) => {
-		rl.question('\nPress Enter for next move...', () => {
+		rl.question("\nPress Enter for next move...", () => {
 			rl.close();
 			resolve();
 		});
@@ -115,7 +115,9 @@ function getPieceIdBeforeMove(gungi: Gungi, move: string): string | null {
 		const pieceType = arataMatch[1];
 		const turn = gungi.turn();
 		const handPieces = gungi.hand(turn);
-		const handPiece = handPieces.find(hp => hp.type === pieceType && hp.count > 0);
+		const handPiece = handPieces.find(
+			(hp) => hp.type === pieceType && hp.count > 0,
+		);
 		return handPiece?.id || null;
 	}
 
@@ -131,7 +133,7 @@ async function playGame() {
 	console.log(formatPieceIds(gungi));
 	console.log(`\nFEN: ${gungi.fen()}`);
 	console.log(
-		`\nMove ${gungi.moveNumber()}, ${gungi.turn() === 'w' ? 'White' : 'Black'} to move`
+		`\nMove ${gungi.moveNumber()}, ${gungi.turn() === "w" ? "White" : "Black"} to move`,
 	);
 	await waitForEnter();
 
@@ -153,7 +155,7 @@ async function playGame() {
 			console.log(`Moved piece ID: ${pieceIdBeforeMove}`);
 		}
 		console.log(
-			`Move ${gungi.moveNumber()}, ${gungi.turn() === 'w' ? 'White' : 'Black'} to move`
+			`Move ${gungi.moveNumber()}, ${gungi.turn() === "w" ? "White" : "Black"} to move`,
 		);
 
 		if (!gungi.isGameOver()) {
@@ -161,9 +163,9 @@ async function playGame() {
 		}
 	}
 
-	console.log('\n=== Game Over ===');
+	console.log("\n=== Game Over ===");
 	console.log(`Final FEN: ${gungi.fen()}`);
-	console.log('\nPGN:');
+	console.log("\nPGN:");
 	console.log(gungi.pgn());
 }
 

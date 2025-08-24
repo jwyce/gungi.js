@@ -6,12 +6,11 @@ import {
 	INTERMEDIATE_POSITION,
 	INTRO_POSITION,
 	ParsedFEN,
-	parseFEN,
 	validateFen,
 } from './fen';
 import { generateArata, generateMovesForSquare } from './move_gen';
 import { encodePGN, parsePGN, PGNOptions } from './pgn';
-import { assignPieceIds, assignPieceIdsWithState } from './piece-ids';
+import { assignPieceIdsWithState } from './piece-ids';
 import {
 	ARATA,
 	ARCHER,
@@ -90,14 +89,17 @@ export class Gungi {
 	#mode!: SetupMode;
 
 	#history: Move[] = [];
-	#previousFen: string | null = null;
 	#previousState: ParsedFEN | null = null;
 
 	#initPosition: string;
 
-	#initializeState(fen: string) {
-		// Assign IDs using the previous state for stability
-		const stateWithIds = assignPieceIdsWithState(fen, this.#previousState);
+	#initializeState(fen: string, move?: Move | null) {
+		// Assign IDs using the previous state and move info for stability
+		const stateWithIds = assignPieceIdsWithState(
+			fen,
+			this.#previousState,
+			move
+		);
 
 		this.#board = stateWithIds.board;
 		this.#hand = stateWithIds.hand;
@@ -107,7 +109,6 @@ export class Gungi {
 		this.#mode = stateWithIds.mode;
 
 		// Update the previous state for next time
-		this.#previousFen = fen;
 		this.#previousState = stateWithIds;
 	}
 
@@ -173,7 +174,6 @@ export class Gungi {
 	}
 
 	clear() {
-		this.#previousFen = null; // Reset tracking for fresh start
 		this.#initializeState(ADVANCED_POSITION);
 		this.#history = [];
 	}
@@ -244,7 +244,6 @@ export class Gungi {
 		fen = ADVANCED_POSITION,
 		opts?: Pick<PGNOptions, 'newline'>
 	) {
-		this.#previousFen = null; // Reset tracking for new game
 		this.#initializeState(fen);
 		this.#history = [];
 		const moves = parsePGN(pgn, opts);
@@ -269,7 +268,7 @@ export class Gungi {
 
 		this.#history.push(found);
 		if (this.isFourfoldRepetition()) this.#history.at(-1)!.san += '停';
-		this.#initializeState(found.after);
+		this.#initializeState(found.after, found);
 		return found;
 	}
 
@@ -312,7 +311,6 @@ export class Gungi {
 	}
 
 	reset() {
-		this.#previousFen = null; // Reset tracking for fresh start
 		this.#initializeState(this.#initPosition);
 		this.#history = [];
 	}
