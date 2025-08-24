@@ -56,9 +56,9 @@ jobs:
 
       - run: pnpm typecheck
 
-  tsc:
+  test:
     runs-on: ubuntu-latest
-    name: Run Unit Tests
+    name: Run Tests
     steps:
       - uses: actions/checkout@v4
         with:
