@@ -163,7 +163,7 @@ export function encodeFEN(fen: ParsedFEN) {
 	for (let file = 0; file < 9; file++) {
 		for (let rank = 0; rank < 9; rank++) {
 			const square = fen.board[file][rank];
-			if (square[0] === null) {
+			if (!square[0]) {
 				emptyCount++;
 				continue;
 			}
