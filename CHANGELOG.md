@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.3.1
+
+### Patch Changes
+
+- ce21aae: fix fen null check, swap to falsy
+
 ## 3.3.0
 
 ### Minor Changes
