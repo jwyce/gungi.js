@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.3.0
+
+### Minor Changes
+
+- da96bcf: adds inCheck, checkmate, and stalemate detection
+
 ## 3.2.3
 
 ### Patch Changes
