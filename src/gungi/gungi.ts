@@ -8,7 +8,12 @@ import {
 	ParsedFEN,
 	validateFen,
 } from './fen';
-import { generateArata, generateMovesForSquare } from './move_gen';
+import {
+	inCheck as checkDetection,
+	generateArata,
+	generateMovesForSquare,
+	isSquareAttacked,
+} from './move_gen';
 import { encodePGN, parsePGN, PGNOptions } from './pgn';
 import { assignPieceIdsWithState } from './piece-ids';
 import {
@@ -78,6 +83,7 @@ export {
 	ENGLISH_NAMES,
 	FEN_CODES,
 	validateFen,
+	isSquareAttacked,
 };
 
 export class Gungi {
@@ -228,11 +234,47 @@ export class Gungi {
 		return Math.max(...frequencyMap.values()) === 4;
 	}
 
+	#hasNoLegalMoves(): boolean {
+		const fen = this.fen();
+		if (this.inDraft()) {
+			return this.#hand.every((hp) => generateArata(hp, fen).length === 0);
+		}
+
+		for (const sq of SQUARES) {
+			if (generateMovesForSquare(sq, fen).length > 0) return false;
+		}
+		for (const hp of this.#hand) {
+			if (generateArata(hp, fen).length > 0) return false;
+		}
+		return true;
+	}
+
+	inCheck(color?: Color): boolean {
+		const c = color ?? this.turn();
+		return checkDetection(c, this.fen());
+	}
+
+	isCheckmate(): boolean {
+		if (this.inDraft()) return false;
+		if (isGameOver(this.#board)) return false; // marshal captured, not checkmate
+		return this.#hasNoLegalMoves() && this.inCheck();
+	}
+
+	isStalemate(): boolean {
+		if (this.inDraft()) return false;
+		if (isGameOver(this.#board)) return false;
+		return this.#hasNoLegalMoves() && !this.inCheck();
+	}
+
+	isDraw(): boolean {
+		return this.isStalemate() || this.isFourfoldRepetition();
+	}
+
 	isGameOver() {
-		return (
-			!this.inDraft() &&
-			(isGameOver(this.#board) || this.isFourfoldRepetition())
-		);
+		if (this.inDraft()) return false;
+		if (isGameOver(this.#board)) return true; // marshal captured
+		if (this.isFourfoldRepetition()) return true;
+		return this.#hasNoLegalMoves(); // checkmate or stalemate
 	}
 
 	load(fen: string) {
@@ -267,8 +309,15 @@ export class Gungi {
 		if (!found) throw new Error(`Illegal move: ${move}`);
 
 		this.#history.push(found);
-		if (this.isFourfoldRepetition()) this.#history.at(-1)!.san += '停';
 		this.#initializeState(found.after, found);
+
+		// Append game state symbols to SAN
+		if (this.isCheckmate()) {
+			this.#history.at(-1)!.san += '#';
+		} else if (this.isStalemate() || this.isFourfoldRepetition()) {
+			this.#history.at(-1)!.san += '=';
+		}
+
 		return found;
 	}
 
