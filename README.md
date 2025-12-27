@@ -478,9 +478,42 @@ gungi.isFourfoldRepetition();
 // -> true
 ```
 
+### .inCheck([ color ])
+
+Returns true if the marshal of the specified color (or current turn) is under attack.
+
+```ts
+const gungi = new Gungi(INTRO_POSITION);
+gungi.inCheck();
+// -> false
+
+gungi.inCheck('w');
+// -> false
+```
+
+### .isCheckmate()
+
+Returns true if the current player is in checkmate (in check with no legal moves).
+
+```ts
+const gungi = new Gungi(ADVANCED_POSITION);
+gungi.isCheckmate();
+// -> false
+```
+
+### .isDraw()
+
+Returns true if the game has ended in a draw via stalemate or fourfold repetition.
+
+```ts
+const gungi = new Gungi(ADVANCED_POSITION);
+gungi.isDraw();
+// -> false
+```
+
 ### .isGameOver()
 
-Returns true if the game has ended via either marshal catpured or fourfold repetition. Otherwise, returns false.
+Returns true if the game has ended via marshal captured, checkmate, stalemate, or fourfold repetition.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
@@ -493,6 +526,16 @@ gungi.load(
 );
 gungi.isGameOver();
 // -> true
+```
+
+### .isStalemate()
+
+Returns true if the current player has no legal moves but is not in check.
+
+```ts
+const gungi = new Gungi(ADVANCED_POSITION);
+gungi.isStalemate();
+// -> false
 ```
 
 ### .load(fen)

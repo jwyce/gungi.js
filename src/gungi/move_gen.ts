@@ -1,5 +1,7 @@
 import { encodeFEN, parseFEN } from './fen';
 import {
+	Board,
+	Color,
 	convert,
 	get,
 	getTop,
@@ -11,6 +13,7 @@ import {
 	put,
 	remove,
 	removeTop,
+	SQUARES,
 	updateHand,
 } from './utils';
 
@@ -328,7 +331,7 @@ function makeMove(move: Move, fen: string) {
 
 	let gameOverSAN = '';
 	if (move.captured?.some((p) => p.type === pieceType.marshal))
-		gameOverSAN = '勝';
+		gameOverSAN = '#';
 
 	return {
 		after: encodeFEN({ board, hand, mode, turn, drafting, moveNumber }),
@@ -354,4 +357,66 @@ function generateCombinations<T>(items: T[]): T[][] {
 	helper(0, []);
 
 	return result;
+}
+
+function getAttackedSquares(square: string, board: Board): string[] {
+	const piece = getTop(square, board);
+	if (!piece) return [];
+
+	const [py, px] = square.split('-').map(Number);
+	const probes = pieceProbes[piece.type];
+
+	return probes.flatMap((probe, i) => {
+		const pval = typeof probe === 'number' ? probe : probe[0];
+		const pcarry = typeof probe === 'number' ? 1 : probe[1];
+		if (pval < 1) return [];
+
+		let [dy, dx] = dirs[i];
+		if (piece.color === 'b') {
+			dy *= -1;
+			dx *= -1;
+		}
+
+		const [y, x] =
+			pval === Infinity ? [py + dy, px + dx] : [py + pval * dy, px + dx];
+		const length = pval === Infinity ? Infinity : piece.tier + pcarry - 1;
+
+		return getAvailableSquares([dy, dx], [y, x], [py, px], length, board);
+	});
+}
+
+export function isSquareAttacked(
+	square: string,
+	byColor: Color,
+	board: Board
+): boolean {
+	const [targetRank, targetFile] = square.split('-').map(Number);
+	const targetSquare = `${targetRank}-${targetFile}`;
+
+	for (const sq of SQUARES) {
+		const piece = getTop(sq, board);
+		if (!piece || piece.color !== byColor) continue;
+
+		const attackedSquares = getAttackedSquares(sq, board);
+		if (attackedSquares.some((s) => s.startsWith(targetSquare))) {
+			return true;
+		}
+	}
+
+	return false;
+}
+
+export function inCheck(color: Color, fen: string): boolean {
+	const { board } = parseFEN(fen);
+	const oppositeColor = color === 'w' ? 'b' : 'w';
+
+	// Find marshal position
+	for (const sq of SQUARES) {
+		const piece = getTop(sq, board);
+		if (piece?.type === pieceType.marshal && piece.color === color) {
+			return isSquareAttacked(sq, oppositeColor, board);
+		}
+	}
+
+	return false; // Marshal not found (already captured)
 }
