@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.4.0
+
+### Minor Changes
+
+- 5d72347: add pgn comments
+
 ## 3.3.1
 
 ### Patch Changes
