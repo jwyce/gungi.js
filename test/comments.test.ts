@@ -102,4 +102,33 @@ describe('comments', () => {
 		expect(gungi.fen()).toBe(fen);
 		expect(gungi.getComment()).toBe('First position');
 	});
+
+	it('should parse comments from PGN in loadPgn', () => {
+		const gungi = new Gungi(INTRO_POSITION);
+		const pgn =
+			'1. 兵(7-1-1)(6-1-1) {Opening move} 侍(3-4-1)(4-4-1) {Response}';
+
+		gungi.loadPgn(pgn, INTRO_POSITION);
+
+		const comments = gungi.getComments();
+		expect(comments).toHaveLength(2);
+		expect(comments.some((c) => c.comment === 'Opening move')).toBe(true);
+		expect(comments.some((c) => c.comment === 'Response')).toBe(true);
+	});
+
+	it('should roundtrip pgn with comments', () => {
+		const gungi = new Gungi(INTRO_POSITION);
+		gungi.move('兵(7-1-1)(6-1-1)');
+		gungi.setComment('First');
+		gungi.move('侍(3-4-1)(4-4-1)');
+		gungi.setComment('Second');
+
+		const pgnWithComments = gungi.pgn({ withComments: true });
+
+		const gungi2 = new Gungi(INTRO_POSITION);
+		gungi2.loadPgn(pgnWithComments, INTRO_POSITION);
+
+		expect(gungi2.getComments()).toHaveLength(2);
+		expect(gungi2.pgn({ withComments: true })).toBe(pgnWithComments);
+	});
 });
