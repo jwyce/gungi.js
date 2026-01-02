@@ -290,8 +290,16 @@ export class Gungi {
 	) {
 		this.#initializeState(fen);
 		this.#history = [];
-		const moves = parsePGN(pgn, opts);
-		moves.forEach((move) => this.move(move));
+		this.#comments.clear();
+
+		const parsed = parsePGN(pgn, opts);
+		parsed.moves.forEach((move, i) => {
+			this.move(move);
+			const comment = parsed.comments.get(i);
+			if (comment) {
+				this.setComment(comment);
+			}
+		});
 	}
 
 	move(move: string | Exclude<Move, 'color' | 'san' | 'before' | 'after'>) {

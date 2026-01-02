@@ -69,14 +69,52 @@ export function encodePGN(history: Move[], opts?: InternalPGNOptions) {
 	return pgn.replaceAll('  ', ' ').trim();
 }
 
-export function parsePGN(pgn: string, opts?: Pick<PGNOptions, 'newline'>) {
-	const newline = opts?.newline ?? '\n';
-	const moves = pgn
-		.split(newline)
-		.flatMap((line) => {
-			return line.replace(/\d+\.+/g, '').split(' ');
-		})
-		.filter((move) => move !== '');
+export type ParsedPGN = {
+	moves: string[];
+	comments: Map<number, string>;
+};
 
-	return moves;
+export function parsePGN(
+	pgn: string,
+	opts?: Pick<PGNOptions, 'newline'>
+): ParsedPGN {
+	const newline = opts?.newline ?? '\n';
+	const comments = new Map<number, string>();
+	const moves: string[] = [];
+
+	let normalized = pgn
+		.split(newline)
+		.join(' ')
+		.replace(/\d+\.+/g, '')
+		.trim();
+
+	while (normalized.length > 0) {
+		normalized = normalized.trim();
+		if (normalized.length === 0) break;
+
+		if (normalized.startsWith('{')) {
+			const endIdx = normalized.indexOf('}');
+			if (endIdx !== -1) {
+				const comment = normalized.slice(1, endIdx).trim();
+				if (moves.length > 0 && comment) {
+					comments.set(moves.length - 1, comment);
+				}
+				normalized = normalized.slice(endIdx + 1);
+				continue;
+			}
+		}
+
+		const match = normalized.match(/^(\S+)/);
+		if (match) {
+			const move = match[1];
+			if (move && !move.startsWith('{')) {
+				moves.push(move);
+			}
+			normalized = normalized.slice(move.length);
+		} else {
+			break;
+		}
+	}
+
+	return { moves, comments };
 }
