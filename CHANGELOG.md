@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.4.1
+
+### Patch Changes
+
+- 1373374: loadPgn previously failed when parsing a pgn with comments
+
 ## 3.4.0
 
 ### Minor Changes
