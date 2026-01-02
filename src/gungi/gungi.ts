@@ -96,6 +96,7 @@ export class Gungi {
 
 	#history: Move[] = [];
 	#previousState: ParsedFEN | null = null;
+	#comments: Map<string, string> = new Map();
 
 	#initPosition: string;
 
@@ -182,6 +183,7 @@ export class Gungi {
 	clear() {
 		this.#initializeState(ADVANCED_POSITION);
 		this.#history = [];
+		this.#comments.clear();
 	}
 
 	fen() {
@@ -352,7 +354,7 @@ export class Gungi {
 	}
 
 	pgn(opts?: PGNOptions) {
-		return encodePGN(this.#history, opts);
+		return encodePGN(this.#history, { ...opts, comments: this.#comments });
 	}
 
 	print(opts?: { english?: boolean }) {
@@ -362,6 +364,7 @@ export class Gungi {
 	reset() {
 		this.#initializeState(this.#initPosition);
 		this.#history = [];
+		this.#comments.clear();
 	}
 
 	turn() {
@@ -376,6 +379,35 @@ export class Gungi {
 		}
 
 		return null;
+	}
+
+	setComment(comment: string) {
+		this.#comments.set(this.fen(), comment);
+	}
+
+	getComment() {
+		return this.#comments.get(this.fen());
+	}
+
+	removeComment() {
+		const fen = this.fen();
+		const comment = this.#comments.get(fen);
+		this.#comments.delete(fen);
+		return comment;
+	}
+
+	getComments() {
+		const result: { fen: string; comment: string }[] = [];
+		for (const [fen, comment] of this.#comments) {
+			result.push({ fen, comment });
+		}
+		return result;
+	}
+
+	removeComments() {
+		const comments = this.getComments();
+		this.#comments.clear();
+		return comments;
 	}
 
 	validateFen(fen: string) {
