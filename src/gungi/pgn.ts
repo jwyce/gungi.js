@@ -32,11 +32,18 @@ import { Move } from './utils';
 export type PGNOptions = {
 	maxWidth?: number;
 	newline?: string;
+	withComments?: boolean;
 };
 
-export function encodePGN(history: Move[], opts?: PGNOptions) {
+type InternalPGNOptions = PGNOptions & {
+	comments?: Map<string, string>;
+};
+
+export function encodePGN(history: Move[], opts?: InternalPGNOptions) {
 	const maxWidth = opts?.maxWidth ?? 6;
 	const newline = opts?.newline ?? '\n';
+	const withComments = opts?.withComments ?? false;
+	const comments = opts?.comments ?? new Map<string, string>();
 
 	let pgn = '';
 	let prev = 0;
@@ -49,6 +56,10 @@ export function encodePGN(history: Move[], opts?: PGNOptions) {
 		}
 
 		pgn += `${move.san} `;
+
+		if (withComments && comments.has(move.after)) {
+			pgn += `{${comments.get(move.after)}} `;
+		}
 
 		if ((i + 1) % maxWidth === 0) {
 			pgn += newline;
