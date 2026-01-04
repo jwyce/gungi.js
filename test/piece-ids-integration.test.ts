@@ -136,14 +136,12 @@ describe('Piece ID Integration Tests', () => {
 		}
 	});
 
-	it('should handle arata moves correctly in beginner mode', () => {
+	it('should handle arata moves correctly in beginner mode - board inherits hand ID', () => {
 		const gungi = new Gungi(BEGINNER_POSITION);
 
-		// In beginner mode, some pieces start in hand
 		const initialHandPieces = gungi.hand();
 		expect(initialHandPieces.length).toBeGreaterThan(0);
 
-		// Track a specific hand piece - use major general (小) since it's in beginner mode hand
 		const majorGeneralHand = initialHandPieces.find(
 			(hp) => hp.type === '小' && hp.color === 'w'
 		);
@@ -152,29 +150,24 @@ describe('Piece ID Integration Tests', () => {
 		const originalHandId = majorGeneralHand!.id!;
 		const originalCount = majorGeneralHand!.count;
 
-		// Make an arata move with this piece
 		const arataMoves = gungi.moves().filter((move) => move.startsWith('新小'));
 		expect(arataMoves.length).toBeGreaterThan(0);
 
 		gungi.move(arataMoves[0]);
 
-		// Check that the hand piece count decreased but kept the same ID
 		const newHandPieces = gungi.hand();
 		const newMajorGeneralHand = newHandPieces.find(
 			(hp) => hp.type === '小' && hp.color === 'w'
 		);
 
 		if (originalCount > 1) {
-			// Should still have some in hand
 			expect(newMajorGeneralHand).toBeDefined();
 			expect(newMajorGeneralHand!.count).toBe(originalCount - 1);
-			expect(newMajorGeneralHand!.id).toBe(originalHandId); // Same ID preserved
+			expect(newMajorGeneralHand!.id).not.toBe(originalHandId);
 		} else {
-			// All pieces of this type were placed
 			expect(newMajorGeneralHand).toBeUndefined();
 		}
 
-		// Check that a new piece appeared on the board
 		let placedPiece: Piece | undefined;
 		for (let rank = 1; rank <= 9; rank++) {
 			for (let file = 1; file <= 9; file++) {
@@ -188,11 +181,9 @@ describe('Piece ID Integration Tests', () => {
 		}
 
 		expect(placedPiece).toBeDefined();
-		expect(placedPiece!.id).toBeDefined();
-		expect(placedPiece!.id).not.toBe(originalHandId); // Board piece should have different ID
-		expect(validateIdFormat(placedPiece!.id!, 1)).toBe(true); // Beginner mode = 1
+		expect(placedPiece!.id).toBe(originalHandId);
+		expect(validateIdFormat(placedPiece!.id!, 1)).toBe(true);
 
-		// Ensure no duplicate IDs
 		const allIds = getAllPieceIds(gungi);
 		expect(validateUniqueIds(allIds.boardIds, allIds.handIds)).toBe(true);
 	});
