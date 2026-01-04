@@ -484,7 +484,34 @@ function assignIdsWithPositionMatching(
 	const result = cloneState(currentState);
 	const modeCode = setupModeToCode[currentState.mode];
 
-	// Simple position-based matching for all pieces
+	// Track which hand piece IDs were used for arata detection
+	const handIdsUsedForArata = new Set<string>();
+
+	// First pass: detect arata moves (hand count decreased, new board piece appeared)
+	for (const prevHandPiece of previousState.hand) {
+		const currHandPiece = result.hand.find(
+			(hp) => hp.type === prevHandPiece.type && hp.color === prevHandPiece.color
+		);
+		const prevCount = prevHandPiece.count;
+		const currCount = currHandPiece?.count ?? 0;
+
+		if (prevCount > currCount && prevHandPiece.id) {
+			// Hand count decreased - find the new board piece of this type
+			const newBoardPiece = findNewBoardPiece(
+				result.board,
+				previousState.board,
+				prevHandPiece.type,
+				prevHandPiece.color
+			);
+			if (newBoardPiece) {
+				// Board piece inherits hand ID for animation
+				newBoardPiece.id = prevHandPiece.id;
+				handIdsUsedForArata.add(prevHandPiece.id);
+			}
+		}
+	}
+
+	// Second pass: position-based matching for board pieces that didn't come from arata
 	for (let rank = 0; rank < 9; rank++) {
 		for (let file = 0; file < 9; file++) {
 			const currentTower = result.board[rank][file];
@@ -500,6 +527,7 @@ function assignIdsWithPositionMatching(
 
 				if (
 					currentPiece &&
+					!currentPiece.id &&
 					previousPiece &&
 					currentPiece.type === previousPiece.type &&
 					currentPiece.color === previousPiece.color &&
@@ -511,13 +539,18 @@ function assignIdsWithPositionMatching(
 		}
 	}
 
-	// Match hand pieces
+	// Third pass: match remaining hand pieces, but give new IDs if their ID was used for arata
 	result.hand.forEach((currentHandPiece) => {
+		if (currentHandPiece.id) return;
+
 		const previousHandPiece = previousState.hand.find(
 			(hp) =>
 				hp.type === currentHandPiece.type && hp.color === currentHandPiece.color
 		);
-		if (previousHandPiece?.id) {
+		if (
+			previousHandPiece?.id &&
+			!handIdsUsedForArata.has(previousHandPiece.id)
+		) {
 			currentHandPiece.id = previousHandPiece.id;
 		}
 	});
@@ -526,6 +559,41 @@ function assignIdsWithPositionMatching(
 	assignMissingIds(result, modeCode);
 
 	return result;
+}
+
+function findNewBoardPiece(
+	currentBoard: Board,
+	previousBoard: Board,
+	type: PieceType,
+	color: Color
+): Piece | null {
+	for (let rank = 0; rank < 9; rank++) {
+		for (let file = 0; file < 9; file++) {
+			const currentTower = currentBoard[rank][file];
+			const previousTower = previousBoard[rank][file];
+
+			for (let tier = 0; tier < currentTower.length; tier++) {
+				const currentPiece = currentTower[tier];
+				if (
+					currentPiece &&
+					currentPiece.type === type &&
+					currentPiece.color === color &&
+					!currentPiece.id
+				) {
+					// Check if this piece wasn't in the previous state at this position
+					const prevPiece = previousTower[tier];
+					if (
+						!prevPiece ||
+						prevPiece.type !== type ||
+						prevPiece.color !== color
+					) {
+						return currentPiece;
+					}
+				}
+			}
+		}
+	}
+	return null;
 }
 
 /**
