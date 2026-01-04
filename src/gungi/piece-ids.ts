@@ -393,7 +393,8 @@ function handleCaptureMove(
 }
 
 /**
- * Handle arata moves - hand piece preserves ID, board piece gets new ID
+ * Handle arata moves - board piece inherits hand ID for animation continuity,
+ * hand piece (if still has count > 0) gets new ID
  */
 function handleArataMove(
 	currentState: ParsedFEN,
@@ -408,30 +409,36 @@ function handleArataMove(
 
 	if (!prevHandPiece?.id) return;
 
-	// CRITICAL: Handle hand piece first to establish what IDs are taken
+	// Parse the to position to get tier info for finding the exact placed piece
+	const [toRank, toFile, toTier] = move.to.split('-').map(Number);
+	const toSquare = `${toRank}-${toFile}`;
+
+	// CRITICAL: Board piece INHERITS the hand piece's ID for animation continuity
+	// This allows framer-motion layoutId to animate the piece from hand to board
+	const placedPiece = findPieceAtSquare(
+		currentState.board,
+		toSquare,
+		move.piece,
+		move.color,
+		toTier
+	);
+	if (placedPiece) {
+		placedPiece.id = prevHandPiece.id;
+	}
+
+	// Hand piece (if still exists with count > 0) gets a NEW ID
+	// This ensures unique IDs and allows the "remaining" hand pieces to be distinct
 	const currentHandPiece = currentState.hand.find(
 		(hp) => hp.type === move.piece && hp.color === move.color
 	);
 	if (currentHandPiece) {
-		currentHandPiece.id = prevHandPiece.id;
-	}
-
-	// Now generate a NEW ID for the board piece (hand ID is now taken)
-	const placedPiece = findPieceAtSquare(
-		currentState.board,
-		move.to,
-		move.piece,
-		move.color
-	);
-	if (placedPiece) {
-		// This will see the hand piece ID as taken and generate the next available
 		const nextId = findNextAvailableId(
 			currentState,
 			modeCode,
 			move.color,
 			move.piece
 		);
-		placedPiece.id = nextId;
+		currentHandPiece.id = nextId;
 	}
 }
 
