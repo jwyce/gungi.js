@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.4.2
+
+### Patch Changes
+
+- 064b2fa: fix arata piece id assignment for accurate tracking (useful for animated presence)
+
 ## 3.4.1
 
 ### Patch Changes
