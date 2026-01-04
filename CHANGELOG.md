@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.4.3
+
+### Patch Changes
+
+- 66a2f4d: The fix adds arata detection to assignIdsWithPositionMatching - when stepping through moves without explicit move info
+
 ## 3.4.2
 
 ### Patch Changes
