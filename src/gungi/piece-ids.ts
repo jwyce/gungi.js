@@ -1,4 +1,4 @@
-import { ParsedFEN, parseFEN } from './fen';
+import { ParsedFEN, parseFEN } from "./fen";
 import {
 	Board,
 	Color,
@@ -7,7 +7,7 @@ import {
 	Piece,
 	PieceType,
 	setupModeToCode,
-} from './utils';
+} from "./utils";
 
 /**
  * Assigns piece IDs with proper stability across moves
@@ -16,7 +16,7 @@ import {
 export function assignPieceIdsWithState(
 	currentFen: string,
 	previousState?: ParsedFEN | null,
-	move?: Move | null
+	move?: Move | null,
 ): ParsedFEN {
 	const currentState = parseFEN(currentFen);
 
@@ -45,7 +45,7 @@ function assignCanonicalIds(state: ParsedFEN): ParsedFEN {
 
 	// Assign IDs sequentially within each group
 	Object.entries(pieceGroups).forEach(([key, pieces]) => {
-		const [color, type] = key.split('|') as [Color, PieceType];
+		const [color, type] = key.split("|") as [Color, PieceType];
 
 		// Sort pieces canonically: board pieces by position, then hand pieces
 		const sortedPieces = sortPiecesCanonically(pieces);
@@ -64,7 +64,7 @@ function assignCanonicalIds(state: ParsedFEN): ParsedFEN {
 function assignIdsWithExplicitMove(
 	currentState: ParsedFEN,
 	previousState: ParsedFEN,
-	move: Move
+	move: Move,
 ): ParsedFEN {
 	const result = cloneStateWithoutIds(currentState);
 	const modeCode = setupModeToCode[currentState.mode];
@@ -111,11 +111,11 @@ function identifyAffectedPieces(move: Move): {
 	let placementSquare: string | undefined;
 
 	switch (move.type) {
-		case 'route':
-		case 'tsuke':
+		case "route":
+		case "tsuke":
 			// Track the specific moving piece
 			if (move.from) {
-				const [fromRank, fromFile, fromTier] = move.from.split('-').map(Number);
+				const [fromRank, fromFile, fromTier] = move.from.split("-").map(Number);
 				movingPiece = {
 					square: `${fromRank}-${fromFile}`,
 					tier: fromTier,
@@ -125,10 +125,10 @@ function identifyAffectedPieces(move: Move): {
 			}
 			break;
 
-		case 'capture':
+		case "capture":
 			// Track moving piece and captured pieces
 			if (move.from) {
-				const [fromRank, fromFile, fromTier] = move.from.split('-').map(Number);
+				const [fromRank, fromFile, fromTier] = move.from.split("-").map(Number);
 				movingPiece = {
 					square: `${fromRank}-${fromFile}`,
 					tier: fromTier,
@@ -149,16 +149,16 @@ function identifyAffectedPieces(move: Move): {
 			}
 			break;
 
-		case 'arata':
+		case "arata":
 			// Hand piece affected + placement square
 			handPieceTypes.push({ color: move.color, type: move.piece });
 			placementSquare = move.to;
 			break;
 
-		case 'betray':
+		case "betray":
 			// Track moving tactician and captured/converted pieces
 			if (move.from) {
-				const [fromRank, fromFile, fromTier] = move.from.split('-').map(Number);
+				const [fromRank, fromFile, fromTier] = move.from.split("-").map(Number);
 				movingPiece = {
 					square: `${fromRank}-${fromFile}`,
 					tier: fromTier,
@@ -208,14 +208,14 @@ function preserveUnaffectedPieceIds(
 		}>;
 		placementSquare?: string;
 		handPieceTypes: Array<{ color: Color; type: PieceType }>;
-	}
+	},
 ): void {
 	// Helper function to check if a specific piece is affected
 	const isPieceAffected = (
 		square: string,
 		tier: number,
 		type: PieceType,
-		color: Color
+		color: Color,
 	): boolean => {
 		// Check if it's the moving piece
 		if (
@@ -235,7 +235,7 @@ function preserveUnaffectedPieceIds(
 					captured.square === square &&
 					captured.tier === tier &&
 					captured.type === type &&
-					captured.color === color
+					captured.color === color,
 			)
 		) {
 			return true;
@@ -278,7 +278,7 @@ function preserveUnaffectedPieceIds(
 							square,
 							tier + 1,
 							currentPiece.type,
-							currentPiece.color
+							currentPiece.color,
 						)
 					) {
 						currentPiece.id = previousPiece.id;
@@ -293,14 +293,14 @@ function preserveUnaffectedPieceIds(
 		const isAffected = affectedPieces.handPieceTypes.some(
 			(affected) =>
 				affected.color === currentHandPiece.color &&
-				affected.type === currentHandPiece.type
+				affected.type === currentHandPiece.type,
 		);
 
 		if (!isAffected) {
 			const previousHandPiece = previousState.hand.find(
 				(hp) =>
 					hp.type === currentHandPiece.type &&
-					hp.color === currentHandPiece.color
+					hp.color === currentHandPiece.color,
 			);
 			if (previousHandPiece?.id) {
 				currentHandPiece.id = previousHandPiece.id;
@@ -316,23 +316,23 @@ function handleAffectedPieces(
 	currentState: ParsedFEN,
 	previousState: ParsedFEN,
 	move: Move,
-	modeCode: number
+	modeCode: number,
 ): void {
 	switch (move.type) {
-		case 'route':
-		case 'tsuke':
+		case "route":
+		case "tsuke":
 			handleRegularMove(currentState, previousState, move);
 			break;
 
-		case 'capture':
+		case "capture":
 			handleCaptureMove(currentState, previousState, move);
 			break;
 
-		case 'arata':
+		case "arata":
 			handleArataMove(currentState, previousState, move, modeCode);
 			break;
 
-		case 'betray':
+		case "betray":
 			handleBetrayalMove(currentState, previousState, move, modeCode);
 			break;
 	}
@@ -344,12 +344,12 @@ function handleAffectedPieces(
 function handleRegularMove(
 	currentState: ParsedFEN,
 	previousState: ParsedFEN,
-	move: Move
+	move: Move,
 ): void {
 	if (!move.from) return;
 
 	// Parse the from position to get tier info
-	const [fromRank, fromFile, fromTier] = move.from.split('-').map(Number);
+	const [fromRank, fromFile, fromTier] = move.from.split("-").map(Number);
 	const fromSquare = `${fromRank}-${fromFile}`;
 
 	// Find the piece that moved in the previous state with exact tier
@@ -358,12 +358,12 @@ function handleRegularMove(
 		fromSquare,
 		move.piece,
 		move.color,
-		fromTier
+		fromTier,
 	);
 	if (!movedPiece?.id) return;
 
 	// Parse the to position to get tier info
-	const [toRank, toFile, toTier] = move.to.split('-').map(Number);
+	const [toRank, toFile, toTier] = move.to.split("-").map(Number);
 	const toSquare = `${toRank}-${toFile}`;
 
 	// Find where it ended up in the current state with exact tier
@@ -372,7 +372,7 @@ function handleRegularMove(
 		toSquare,
 		move.piece,
 		move.color,
-		toTier
+		toTier,
 	);
 	if (newPiece) {
 		newPiece.id = movedPiece.id;
@@ -385,7 +385,7 @@ function handleRegularMove(
 function handleCaptureMove(
 	currentState: ParsedFEN,
 	previousState: ParsedFEN,
-	move: Move
+	move: Move,
 ): void {
 	// Handle the moving piece same as regular move
 	handleRegularMove(currentState, previousState, move);
@@ -400,17 +400,17 @@ function handleArataMove(
 	currentState: ParsedFEN,
 	previousState: ParsedFEN,
 	move: Move,
-	modeCode: number
+	modeCode: number,
 ): void {
 	// Find the hand piece in the previous state
 	const prevHandPiece = previousState.hand.find(
-		(hp) => hp.type === move.piece && hp.color === move.color
+		(hp) => hp.type === move.piece && hp.color === move.color,
 	);
 
 	if (!prevHandPiece?.id) return;
 
 	// Parse the to position to get tier info for finding the exact placed piece
-	const [toRank, toFile, toTier] = move.to.split('-').map(Number);
+	const [toRank, toFile, toTier] = move.to.split("-").map(Number);
 	const toSquare = `${toRank}-${toFile}`;
 
 	// CRITICAL: Board piece INHERITS the hand piece's ID for animation continuity
@@ -420,7 +420,7 @@ function handleArataMove(
 		toSquare,
 		move.piece,
 		move.color,
-		toTier
+		toTier,
 	);
 	if (placedPiece) {
 		placedPiece.id = prevHandPiece.id;
@@ -429,14 +429,14 @@ function handleArataMove(
 	// Hand piece (if still exists with count > 0) gets a NEW ID
 	// This ensures unique IDs and allows the "remaining" hand pieces to be distinct
 	const currentHandPiece = currentState.hand.find(
-		(hp) => hp.type === move.piece && hp.color === move.color
+		(hp) => hp.type === move.piece && hp.color === move.color,
 	);
 	if (currentHandPiece) {
 		const nextId = findNextAvailableId(
 			currentState,
 			modeCode,
 			move.color,
-			move.piece
+			move.piece,
 		);
 		currentHandPiece.id = nextId;
 	}
@@ -449,7 +449,7 @@ function handleBetrayalMove(
 	currentState: ParsedFEN,
 	previousState: ParsedFEN,
 	move: Move,
-	modeCode: number
+	modeCode: number,
 ): void {
 	// Handle the tactician's movement
 	handleRegularMove(currentState, previousState, move);
@@ -458,7 +458,7 @@ function handleBetrayalMove(
 	if (move.captured) {
 		move.captured.forEach((capturedPiece) => {
 			const handPiece = currentState.hand.find(
-				(hp) => hp.type === capturedPiece.type && hp.color === move.color
+				(hp) => hp.type === capturedPiece.type && hp.color === move.color,
 			);
 			// Hand pieces from conversions get new IDs (they're essentially new pieces)
 			if (handPiece && !handPiece.id) {
@@ -466,7 +466,7 @@ function handleBetrayalMove(
 					currentState,
 					modeCode,
 					move.color,
-					capturedPiece.type
+					capturedPiece.type,
 				);
 				handPiece.id = nextId;
 			}
@@ -479,12 +479,40 @@ function handleBetrayalMove(
  */
 function assignIdsWithPositionMatching(
 	currentState: ParsedFEN,
-	previousState: ParsedFEN
+	previousState: ParsedFEN,
 ): ParsedFEN {
 	const result = cloneState(currentState);
 	const modeCode = setupModeToCode[currentState.mode];
 
-	// Simple position-based matching for all pieces
+	// Track which hand piece IDs were used for arata detection
+	const handIdsUsedForArata = new Set<string>();
+
+	// First pass: detect arata moves (hand count decreased, new board piece appeared)
+	for (const prevHandPiece of previousState.hand) {
+		const currHandPiece = result.hand.find(
+			(hp) =>
+				hp.type === prevHandPiece.type && hp.color === prevHandPiece.color,
+		);
+		const prevCount = prevHandPiece.count;
+		const currCount = currHandPiece?.count ?? 0;
+
+		if (prevCount > currCount && prevHandPiece.id) {
+			// Hand count decreased - find the new board piece of this type
+			const newBoardPiece = findNewBoardPiece(
+				result.board,
+				previousState.board,
+				prevHandPiece.type,
+				prevHandPiece.color,
+			);
+			if (newBoardPiece) {
+				// Board piece inherits hand ID for animation
+				newBoardPiece.id = prevHandPiece.id;
+				handIdsUsedForArata.add(prevHandPiece.id);
+			}
+		}
+	}
+
+	// Second pass: position-based matching for board pieces that didn't come from arata
 	for (let rank = 0; rank < 9; rank++) {
 		for (let file = 0; file < 9; file++) {
 			const currentTower = result.board[rank][file];
@@ -500,6 +528,7 @@ function assignIdsWithPositionMatching(
 
 				if (
 					currentPiece &&
+					!currentPiece.id &&
 					previousPiece &&
 					currentPiece.type === previousPiece.type &&
 					currentPiece.color === previousPiece.color &&
@@ -511,13 +540,19 @@ function assignIdsWithPositionMatching(
 		}
 	}
 
-	// Match hand pieces
+	// Third pass: match remaining hand pieces, but give new IDs if their ID was used for arata
 	result.hand.forEach((currentHandPiece) => {
+		if (currentHandPiece.id) return;
+
 		const previousHandPiece = previousState.hand.find(
 			(hp) =>
-				hp.type === currentHandPiece.type && hp.color === currentHandPiece.color
+				hp.type === currentHandPiece.type &&
+				hp.color === currentHandPiece.color,
 		);
-		if (previousHandPiece?.id) {
+		if (
+			previousHandPiece?.id &&
+			!handIdsUsedForArata.has(previousHandPiece.id)
+		) {
 			currentHandPiece.id = previousHandPiece.id;
 		}
 	});
@@ -528,6 +563,41 @@ function assignIdsWithPositionMatching(
 	return result;
 }
 
+function findNewBoardPiece(
+	currentBoard: Board,
+	previousBoard: Board,
+	type: PieceType,
+	color: Color,
+): Piece | null {
+	for (let rank = 0; rank < 9; rank++) {
+		for (let file = 0; file < 9; file++) {
+			const currentTower = currentBoard[rank][file];
+			const previousTower = previousBoard[rank][file];
+
+			for (let tier = 0; tier < currentTower.length; tier++) {
+				const currentPiece = currentTower[tier];
+				if (
+					currentPiece &&
+					currentPiece.type === type &&
+					currentPiece.color === color &&
+					!currentPiece.id
+				) {
+					// Check if this piece wasn't in the previous state at this position
+					const prevPiece = previousTower[tier];
+					if (
+						!prevPiece ||
+						prevPiece.type !== type ||
+						prevPiece.color !== color
+					) {
+						return currentPiece;
+					}
+				}
+			}
+		}
+	}
+	return null;
+}
+
 /**
  * Assign IDs to pieces that don't have them yet
  */
@@ -536,7 +606,7 @@ function assignMissingIds(state: ParsedFEN, modeCode: number): void {
 	const pieceGroups = groupPiecesByTypeAndColor(state);
 
 	Object.entries(pieceGroups).forEach(([key, pieces]) => {
-		const [color, type] = key.split('|') as [Color, PieceType];
+		const [color, type] = key.split("|") as [Color, PieceType];
 
 		pieces.forEach((piece) => {
 			if (!piece.id) {
@@ -563,7 +633,7 @@ function findNextAvailableId(
 	state: ParsedFEN,
 	modeCode: number,
 	color: Color,
-	type: PieceType
+	type: PieceType,
 ): string {
 	const usedIds = new Set(getAllUsedIds(state));
 
@@ -609,7 +679,7 @@ function getAllUsedIds(state: ParsedFEN): string[] {
  * Group all pieces by type and color for ID assignment
  */
 function groupPiecesByTypeAndColor(
-	state: ParsedFEN
+	state: ParsedFEN,
 ): Record<string, Array<Piece | HandPiece>> {
 	const groups: Record<string, Array<Piece | HandPiece>> = {};
 
@@ -640,12 +710,12 @@ function groupPiecesByTypeAndColor(
  * Sort pieces canonically for consistent ID assignment
  */
 function sortPiecesCanonically(
-	pieces: Array<Piece | HandPiece>
+	pieces: Array<Piece | HandPiece>,
 ): Array<Piece | HandPiece> {
 	return pieces.sort((a, b) => {
 		// Board pieces come before hand pieces
-		const aIsBoard = 'square' in a;
-		const bIsBoard = 'square' in b;
+		const aIsBoard = "square" in a;
+		const bIsBoard = "square" in b;
 
 		if (aIsBoard && !bIsBoard) return -1;
 		if (!aIsBoard && bIsBoard) return 1;
@@ -656,8 +726,8 @@ function sortPiecesCanonically(
 			const bPiece = b as Piece;
 
 			if (aPiece.square !== bPiece.square) {
-				const [aRank, aFile] = aPiece.square.split('-').map(Number);
-				const [bRank, bFile] = bPiece.square.split('-').map(Number);
+				const [aRank, aFile] = aPiece.square.split("-").map(Number);
+				const [bRank, bFile] = bPiece.square.split("-").map(Number);
 
 				if (aRank !== bRank) return aRank - bRank;
 				return aFile - bFile;
@@ -679,9 +749,9 @@ function findPieceAtSquare(
 	square: string,
 	type?: PieceType,
 	color?: Color,
-	tier?: number
+	tier?: number,
 ): Piece | null {
-	const [rank, file] = square.split('-').map(Number);
+	const [rank, file] = square.split("-").map(Number);
 	if (rank < 1 || rank > 9 || file < 1 || file > 9) return null;
 
 	const tower = board[rank - 1][9 - file];
@@ -705,7 +775,7 @@ function findPieceAtSquare(
 function cloneState(state: ParsedFEN): ParsedFEN {
 	return {
 		board: state.board.map((rank) =>
-			rank.map((file) => file.map((piece) => (piece ? { ...piece } : piece)))
+			rank.map((file) => file.map((piece) => (piece ? { ...piece } : piece))),
 		),
 		hand: state.hand.map((hp) => ({ ...hp })),
 		turn: state.turn,
@@ -722,8 +792,8 @@ function cloneStateWithoutIds(state: ParsedFEN): ParsedFEN {
 	return {
 		board: state.board.map((rank) =>
 			rank.map((file) =>
-				file.map((piece) => (piece ? { ...piece, id: undefined } : piece))
-			)
+				file.map((piece) => (piece ? { ...piece, id: undefined } : piece)),
+			),
 		),
 		hand: state.hand.map((hp) => ({ ...hp, id: undefined })),
 		turn: state.turn,
