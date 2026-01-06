@@ -304,9 +304,11 @@ export class Gungi {
 
 	move(move: string | Exclude<Move, 'color' | 'san' | 'before' | 'after'>) {
 		const moves = this.moves({ verbose: true }) as Move[];
+		const normalizedInput =
+			typeof move === 'string' ? move.replace(/[=#]$/, '') : null;
 		const found =
 			typeof move === 'string'
-				? moves.find((m) => m.san === move)
+				? moves.find((m) => m.san === normalizedInput || m.san === move)
 				: moves.find(
 						(m) =>
 							move.piece === m.piece &&
