@@ -1,4 +1,4 @@
-import pc from "picocolors";
+import pc from 'picocolors';
 import {
 	ADVANCED_POSITION,
 	BEGINNER_POSITION,
@@ -7,15 +7,15 @@ import {
 	INTRO_POSITION,
 	ParsedFEN,
 	validateFen,
-} from "./fen";
+} from './fen';
 import {
 	inCheck as checkDetection,
 	generateArata,
 	generateMovesForSquare,
 	isSquareAttacked,
-} from "./move_gen";
-import { encodePGN, parsePGN, PGNOptions } from "./pgn";
-import { assignPieceIdsWithState } from "./piece-ids";
+} from './move_gen';
+import { encodePGN, parsePGN, PGNOptions } from './pgn';
+import { assignPieceIdsWithState } from './piece-ids';
 import {
 	ARATA,
 	ARCHER,
@@ -51,7 +51,7 @@ import {
 	TSUKE,
 	WARRIOR,
 	WHITE,
-} from "./utils";
+} from './utils';
 
 export {
 	WHITE,
@@ -105,7 +105,7 @@ export class Gungi {
 		const stateWithIds = assignPieceIdsWithState(
 			fen,
 			this.#previousState,
-			move,
+			move
 		);
 
 		this.#board = stateWithIds.board;
@@ -138,22 +138,22 @@ export class Gungi {
 			for (let file = 9; file > 0; file--) {
 				const square = this.getTop(`${rank}-${file}`);
 				if (!square) {
-					s += "・";
+					s += '・';
 					continue;
 				}
 
 				const code = pieceToFenCode[symbolToName[square.type]];
-				const en = square.color === "w" ? code.toUpperCase() : code;
+				const en = square.color === 'w' ? code.toUpperCase() : code;
 
 				const coloredPiece = tierToColor[square.tier as 1 | 2 | 3](
 					opts?.english
 						? String.fromCharCode(en.charCodeAt(0) + 0xfee0)
-						: square.type,
+						: square.type
 				);
 
-				s += square.color === "w" ? coloredPiece : pc.dim(coloredPiece);
+				s += square.color === 'w' ? coloredPiece : pc.dim(coloredPiece);
 			}
-			s += `｜${String.fromCharCode(rank - 1 + "１".charCodeAt(0))}\n`;
+			s += `｜${String.fromCharCode(rank - 1 + '１'.charCodeAt(0))}\n`;
 		}
 		s += `＋ーーーーーーーーー＋\n`;
 		return s;
@@ -226,8 +226,8 @@ export class Gungi {
 	}
 
 	isFourfoldRepetition() {
-		const states = this.#history.map((move) => move.before.split(" ")[0]);
-		if (states.length) states.push(this.#history.at(-1)!.after.split(" ")[0]);
+		const states = this.#history.map((move) => move.before.split(' ')[0]);
+		if (states.length) states.push(this.#history.at(-1)!.after.split(' ')[0]);
 		const frequencyMap = states.reduce((map, str) => {
 			map.set(str, (map.get(str) || 0) + 1);
 			return map;
@@ -286,7 +286,7 @@ export class Gungi {
 	loadPgn(
 		pgn: string,
 		fen = ADVANCED_POSITION,
-		opts?: Pick<PGNOptions, "newline">,
+		opts?: Pick<PGNOptions, 'newline'>
 	) {
 		this.#initializeState(fen);
 		this.#history = [];
@@ -302,12 +302,12 @@ export class Gungi {
 		});
 	}
 
-	move(move: string | Exclude<Move, "color" | "san" | "before" | "after">) {
+	move(move: string | Exclude<Move, 'color' | 'san' | 'before' | 'after'>) {
 		const moves = this.moves({ verbose: true }) as Move[];
 		const normalizedInput =
-			typeof move === "string" ? move.replace(/[=#]$/, "") : null;
+			typeof move === 'string' ? move.replace(/[=#]$/, '') : null;
 		const found =
-			typeof move === "string"
+			typeof move === 'string'
 				? moves.find((m) => m.san === normalizedInput || m.san === move)
 				: moves.find(
 						(m) =>
@@ -316,7 +316,7 @@ export class Gungi {
 							move.from === m.from &&
 							move.to === m.to &&
 							move.captured === m.captured &&
-							move.draftFinished === m.draftFinished,
+							move.draftFinished === m.draftFinished
 					);
 		if (!found) throw new Error(`Illegal move: ${move}`);
 
@@ -325,9 +325,9 @@ export class Gungi {
 
 		// Append game state symbols to SAN
 		if (this.isCheckmate()) {
-			this.#history.at(-1)!.san += "#";
+			this.#history.at(-1)!.san += '#';
 		} else if (this.isStalemate() || this.isFourfoldRepetition()) {
-			this.#history.at(-1)!.san += "=";
+			this.#history.at(-1)!.san += '=';
 		}
 
 		return found;
@@ -347,11 +347,11 @@ export class Gungi {
 			return opts?.verbose ? moves : moves.map((move) => move.san);
 		} else {
 			const boardMoves = SQUARES.flatMap((square) =>
-				generateMovesForSquare(square, this.fen()),
+				generateMovesForSquare(square, this.fen())
 			);
 
 			const handMoves = this.hand().flatMap((hp) =>
-				generateArata(hp, this.fen()),
+				generateArata(hp, this.fen())
 			);
 
 			const moves = [...boardMoves, ...handMoves];
