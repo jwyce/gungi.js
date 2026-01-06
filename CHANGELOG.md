@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.4.4
+
+### Patch Changes
+
+- a5e7b1a: consistent last san notation (ensures # or =) on final move
+
 ## 3.4.3
 
 ### Patch Changes
