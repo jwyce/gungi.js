@@ -190,3 +190,47 @@ All 8 tasks now complete:
 7. ✅ isGameOver() update
 8. ✅ Comprehensive test suite
 
+
+## [2026-01-25] Final Summary - All Tasks Complete
+
+### Work Completed
+1. ✅ Added `wouldBeInCheckAfterMove()` helper - checks if move escapes check
+2. ✅ Added `#hasEscapingMove()` method - finds if any move doesn't leave marshal in check
+3. ✅ Fixed `isCheckmate()` - in check + no escaping move
+4. ✅ Fixed `isStalemate()` - not in check + all moves lead to check
+5. ✅ Added `isInsufficientMaterial()` - only 2 non-adjacent marshals
+6. ✅ Updated `isDraw()` - includes insufficient material
+7. ✅ Updated `isGameOver()` - correct order of checks
+8. ✅ Added 27 comprehensive tests (skipped memoization - not needed)
+9. ✅ Updated README.md - documented new method and clarified Gungi rules
+
+### Verification Results
+- TypeScript: ✅ No errors
+- Build: ✅ Success
+- Tests: ✅ 77/78 pass (1 pre-existing timeout unrelated to changes)
+- New tests: ✅ 27/27 pass in 271ms
+
+### Key Implementation Details
+- Early return optimization in `#hasEscapingMove()` - finds escaping move fast
+- Adjacency check: rank diff <= 1 AND file diff <= 1
+- Draft phase: all game-ending methods return false
+- Marshal captured: isCheckmate/isStalemate return false (game already over)
+
+### Gungi-Specific Rules Implemented
+- Players CAN move while in check (opponent can capture marshal)
+- TRUE checkmate = in check + no escaping move
+- TRUE stalemate = not in check + all moves lead to check
+- Insufficient material = only 2 non-adjacent marshals
+
+### PR Status
+- Bookmark: fix-checkmate-stalemate
+- PR: https://github.com/jwyce/gungi.js/pull/39
+- Commits: 7 atomic commits with succinct descriptions
+- Status: Ready to merge
+
+### Decision: Memoization Skipped
+- Only helps on repeated positions (rare in Gungi)
+- Early return already optimizes common case
+- Added comprehensive tests instead for better coverage
+- Can add later if performance becomes issue
+

@@ -30,10 +30,10 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ### Definition of Done
 
-- [ ] `isCheckmate()` true only when in check AND no move escapes check
-- [ ] `isStalemate()` true only when NOT in check AND every move leads to check
-- [ ] `isInsufficientMaterial()` true when only 2 marshals (no hand/board pieces), not adjacent
-- [ ] PGN ends with `#` for checkmate, `=` for draws
+- [x] `isCheckmate()` true only when in check AND no move escapes check
+- [x] `isStalemate()` true only when NOT in check AND every move leads to check
+- [x] `isInsufficientMaterial()` true when only 2 marshals (no hand/board pieces), not adjacent
+- [x] PGN ends with `#` for checkmate, `=` for draws
 
 ### Must NOT Have
 
@@ -189,24 +189,15 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ---
 
-- [ ] 8. Add memoization for `#hasEscapingMove()` (optional perf)
+- [x] 8. Add memoization for `#hasEscapingMove()` (optional perf) - SKIPPED
 
-  **What to do**:
+  **Decision**: Skipped - memoization only helps on repeated positions (rare). Early return already optimizes common case. Added comprehensive tests instead.
 
-  - Add private cache Map keyed by FEN string
-  - Check cache before computing
-  - Store result after computing
-  - Clear cache in `move()`, `undo()`, `load()`, `reset()`
+  **What was done instead**:
 
-  **References**:
-
-  - `src/gungi/gungi.ts:289-324` - `move()` method
-  - `src/gungi/gungi.ts` - `undo()`, `load()`, `reset()` methods
-
-  **Acceptance Criteria**:
-
-  - [ ] Second call with same position returns cached result
-  - [ ] Cache cleared on state-changing operations
+  - Added 27 comprehensive tests in `test/game-ending.test.ts`
+  - All tests passing (271ms)
+  - Covers: checkmate, stalemate, insufficient material, draft phase, marshal captured, Gungi-specific rules
 
 ---
 
@@ -257,12 +248,13 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 Atomic commits per task with succinct descriptions:
 
-- After task 1: `add wouldBeInCheckAfterMove helper`
-- After task 2: `add hasEscapingMove method`
-- After tasks 3-4: `fix checkmate/stalemate detection`
-- After tasks 5-6: `add insufficient material detection`
-- After task 7: `update isGameOver`
-- After task 8 (if done): `add memoization for check escape`
-- After task 9: `update readme`
+- ✅ After task 1: `add wouldBeInCheckAfterMove helper`
+- ✅ After task 2: `add hasEscapingMove method`
+- ✅ After tasks 3-4: `fix checkmate/stalemate detection`
+- ✅ After tasks 5-6: `add insufficient material detection`
+- ✅ After task 7: `update isGameOver`
+- ✅ After task 8: `add comprehensive game-ending tests` (instead of memoization)
+- ✅ After task 9: `update readme`
 
-At end: create bookmark `fix-checkmate-stalemate` and open PR
+✅ Bookmark created: `fix-checkmate-stalemate`
+✅ PR opened: https://github.com/jwyce/gungi.js/pull/39
