@@ -496,7 +496,7 @@ gungi.inCheck('w');
 
 ### .isCheckmate()
 
-Returns true if the current player is in checkmate (in check with no legal moves).
+Returns true if the current player is in checkmate (in check with no move that escapes check). Note: In Gungi, players can move while in check, but checkmate occurs when no move would escape check.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
@@ -506,7 +506,7 @@ gungi.isCheckmate();
 
 ### .isDraw()
 
-Returns true if the game has ended in a draw via stalemate or fourfold repetition.
+Returns true if the game has ended in a draw via stalemate, fourfold repetition, or insufficient material.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
@@ -516,7 +516,7 @@ gungi.isDraw();
 
 ### .isGameOver()
 
-Returns true if the game has ended via marshal captured, checkmate, stalemate, or fourfold repetition.
+Returns true if the game has ended via marshal captured, checkmate, stalemate, fourfold repetition, or insufficient material.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
@@ -533,12 +533,24 @@ gungi.isGameOver();
 
 ### .isStalemate()
 
-Returns true if the current player has no legal moves but is not in check.
+Returns true if the current player is in stalemate (not in check but all moves would result in being in check). This is a draw condition.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
 gungi.isStalemate();
 // -> false
+```
+
+### .isInsufficientMaterial()
+
+Returns true if only two marshals remain on the board and in hand, and they are not adjacent to each other. This is a draw condition in Gungi.
+
+```ts
+const gungi = new Gungi(ADVANCED_POSITION);
+// ... play until only 2 marshals remain
+gungi.isInsufficientMaterial();
+// -> true (if marshals not adjacent)
+// -> false (if marshals are adjacent or other pieces exist)
 ```
 
 ### .load(fen)

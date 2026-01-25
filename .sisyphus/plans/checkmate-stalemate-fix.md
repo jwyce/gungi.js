@@ -226,7 +226,7 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ---
 
-- [ ] 9. Update README.md
+- [x] 9. Update README.md
 
   **What to do**:
 
