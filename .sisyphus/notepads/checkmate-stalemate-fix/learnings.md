@@ -23,3 +23,28 @@
 ### Next Steps
 - Task 3: Fix `isCheckmate()` to use `!hasEscapingMove()` instead of `!hasNoLegalMoves()`
 - Task 4: Fix `isStalemate()` to use `!hasEscapingMove()` instead of `!hasNoLegalMoves()`
+
+## Task 3: isCheckmate() & isStalemate() Fix
+
+### Completed
+- Fixed `isCheckmate()` at line 285: `return this.inCheck() && !this.#hasEscapingMove();`
+- Fixed `isStalemate()` at line 291: `return !this.inCheck() && !this.#hasEscapingMove();`
+- Both methods now use correct Gungi rules:
+  - **Checkmate**: In check AND no escaping move exists
+  - **Stalemate**: NOT in check AND no escaping move exists (all moves put marshal in check)
+
+### Key Changes
+- Replaced `#hasNoLegalMoves()` with `!#hasEscapingMove()` in both methods
+- Kept early returns for draft phase and game-over checks
+- Reordered conditions for clarity: check condition first, then escaping move check
+
+### Verification
+- TypeScript compilation: ✅ No errors
+- Build: ✅ Success (24ms ESM, 1342ms DTS)
+- LSP diagnostics: ✅ Clean
+
+### Logic Explanation
+- `#hasEscapingMove()` returns true if ANY move escapes check
+- `!#hasEscapingMove()` returns true if ALL moves leave marshal in check
+- For checkmate: must be in check AND all moves leave in check
+- For stalemate: must NOT be in check AND all moves would put in check

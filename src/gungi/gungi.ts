@@ -282,13 +282,13 @@ export class Gungi {
 	isCheckmate(): boolean {
 		if (this.inDraft()) return false;
 		if (isGameOver(this.#board)) return false; // marshal captured, not checkmate
-		return this.#hasNoLegalMoves() && this.inCheck();
+		return this.inCheck() && !this.#hasEscapingMove();
 	}
 
 	isStalemate(): boolean {
 		if (this.inDraft()) return false;
 		if (isGameOver(this.#board)) return false;
-		return this.#hasNoLegalMoves() && !this.inCheck();
+		return !this.inCheck() && !this.#hasEscapingMove();
 	}
 
 	isDraw(): boolean {

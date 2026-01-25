@@ -90,7 +90,7 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ---
 
-- [ ] 3. Fix `isCheckmate()`
+- [x] 3. Fix `isCheckmate()`
 
   **What to do**:
 
@@ -110,7 +110,7 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ---
 
-- [ ] 4. Fix `isStalemate()`
+- [x] 4. Fix `isStalemate()`
 
   **What to do**:
 
