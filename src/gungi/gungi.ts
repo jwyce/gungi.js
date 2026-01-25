@@ -257,23 +257,21 @@ export class Gungi {
 	#hasEscapingMove(): boolean {
 		const fen = this.fen();
 
-		// Check board moves
 		for (const sq of SQUARES) {
 			const moves = generateMovesForSquare(sq, fen);
 			for (const move of moves) {
-				if (!wouldBeInCheckAfterMove(move)) return true; // Found escaping move
+				if (!wouldBeInCheckAfterMove(move)) return true;
 			}
 		}
 
-		// Check hand moves (arata)
 		for (const hp of this.#hand) {
 			const moves = generateArata(hp, fen);
 			for (const move of moves) {
-				if (!wouldBeInCheckAfterMove(move)) return true; // Found escaping move
+				if (!wouldBeInCheckAfterMove(move)) return true;
 			}
 		}
 
-		return false; // No escaping move found
+		return false;
 	}
 
 	inCheck(color?: Color): boolean {
@@ -283,7 +281,7 @@ export class Gungi {
 
 	isCheckmate(): boolean {
 		if (this.inDraft()) return false;
-		if (isGameOver(this.#board)) return false; // marshal captured, not checkmate
+		if (isGameOver(this.#board)) return false;
 		return this.inCheck() && !this.#hasEscapingMove();
 	}
 
