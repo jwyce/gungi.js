@@ -420,3 +420,7 @@ export function inCheck(color: Color, fen: string): boolean {
 
 	return false; // Marshal not found (already captured)
 }
+
+export function wouldBeInCheckAfterMove(move: Move): boolean {
+	return inCheck(move.color, move.after);
+}

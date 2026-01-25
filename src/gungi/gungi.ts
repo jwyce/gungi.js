@@ -13,6 +13,7 @@ import {
 	generateArata,
 	generateMovesForSquare,
 	isSquareAttacked,
+	wouldBeInCheckAfterMove,
 } from './move_gen';
 import { encodePGN, parsePGN, PGNOptions } from './pgn';
 import { assignPieceIdsWithState } from './piece-ids';
@@ -249,6 +250,28 @@ export class Gungi {
 			if (generateArata(hp, fen).length > 0) return false;
 		}
 		return true;
+	}
+
+	#hasEscapingMove(): boolean {
+		const fen = this.fen();
+
+		// Check board moves
+		for (const sq of SQUARES) {
+			const moves = generateMovesForSquare(sq, fen);
+			for (const move of moves) {
+				if (!wouldBeInCheckAfterMove(move)) return true; // Found escaping move
+			}
+		}
+
+		// Check hand moves (arata)
+		for (const hp of this.#hand) {
+			const moves = generateArata(hp, fen);
+			for (const move of moves) {
+				if (!wouldBeInCheckAfterMove(move)) return true; // Found escaping move
+			}
+		}
+
+		return false; // No escaping move found
 	}
 
 	inCheck(color?: Color): boolean {
