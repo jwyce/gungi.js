@@ -1,11 +1,13 @@
 import pc from 'picocolors';
+import type { ParsedFEN } from './fen';
+import type { PGNOptions } from './pgn';
+import type { Board, Color, HandPiece, Move, Piece, SetupMode } from './utils';
 import {
 	ADVANCED_POSITION,
 	BEGINNER_POSITION,
 	encodeFEN,
 	INTERMEDIATE_POSITION,
 	INTRO_POSITION,
-	ParsedFEN,
 	validateFen,
 } from './fen';
 import {
@@ -15,36 +17,30 @@ import {
 	isSquareAttacked,
 	wouldBeInCheckAfterMove,
 } from './move_gen';
-import { encodePGN, parsePGN, PGNOptions } from './pgn';
+import { encodePGN, parsePGN } from './pgn';
 import { assignPieceIdsWithState } from './piece-ids';
 import {
 	ARATA,
 	ARCHER,
 	BETRAY,
 	BLACK,
-	Board,
 	CANNON,
 	CANONICAL_NAMES,
-	Color,
 	ENGLISH_NAMES,
 	FEN_CODES,
 	FORTRESS,
 	GENERAL,
 	get,
 	getTop,
-	HandPiece,
 	isGameOver,
 	LANCER,
 	LIEUTENANT_GENERAL,
 	MAJOR_GENERAL,
 	MARSHAL,
-	Move,
 	MUSKETEER,
 	piece,
-	Piece,
 	pieceToFenCode,
 	RIDER,
-	SetupMode,
 	SOLDIER,
 	SPY,
 	SQUARES,
@@ -257,23 +253,21 @@ export class Gungi {
 	#hasEscapingMove(): boolean {
 		const fen = this.fen();
 
-		// Check board moves
 		for (const sq of SQUARES) {
 			const moves = generateMovesForSquare(sq, fen);
 			for (const move of moves) {
-				if (!wouldBeInCheckAfterMove(move)) return true; // Found escaping move
+				if (!wouldBeInCheckAfterMove(move)) return true;
 			}
 		}
 
-		// Check hand moves (arata)
 		for (const hp of this.#hand) {
 			const moves = generateArata(hp, fen);
 			for (const move of moves) {
-				if (!wouldBeInCheckAfterMove(move)) return true; // Found escaping move
+				if (!wouldBeInCheckAfterMove(move)) return true;
 			}
 		}
 
-		return false; // No escaping move found
+		return false;
 	}
 
 	inCheck(color?: Color): boolean {
@@ -283,7 +277,7 @@ export class Gungi {
 
 	isCheckmate(): boolean {
 		if (this.inDraft()) return false;
-		if (isGameOver(this.#board)) return false; // marshal captured, not checkmate
+		if (isGameOver(this.#board)) return false;
 		return this.inCheck() && !this.#hasEscapingMove();
 	}
 
@@ -383,7 +377,11 @@ export class Gungi {
 		// Append game state symbols to SAN
 		if (this.isCheckmate()) {
 			this.#history.at(-1)!.san += '#';
-		} else if (this.isStalemate() || this.isFourfoldRepetition()) {
+		} else if (
+			this.isStalemate() ||
+			this.isFourfoldRepetition() ||
+			this.isInsufficientMaterial()
+		) {
 			this.#history.at(-1)!.san += '=';
 		}
 
