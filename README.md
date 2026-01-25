@@ -496,17 +496,24 @@ gungi.inCheck('w');
 
 ### .isCheckmate()
 
-Returns true if the current player is in checkmate (in check with no legal moves).
+Returns true if the current player is in checkmate (in check with no move that escapes check). Note: In Gungi, players can move while in check, but checkmate occurs when no move would escape check.
 
 ```ts
-const gungi = new Gungi(ADVANCED_POSITION);
+// checkmate position - black marshal surrounded with no escape
+const gungi = new Gungi(
+	'3img3/1ra1|n:G|1as1/d1fwdwf2/9/8d/9/D1FWDWF1D/1SA1N1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 b 1 - 3'
+);
 gungi.isCheckmate();
-// -> false
+// -> true
+gungi.inCheck();
+// -> true
+gungi.isGameOver();
+// -> true
 ```
 
 ### .isDraw()
 
-Returns true if the game has ended in a draw via stalemate or fourfold repetition.
+Returns true if the game has ended in a draw via stalemate, fourfold repetition, or insufficient material.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
@@ -516,7 +523,7 @@ gungi.isDraw();
 
 ### .isGameOver()
 
-Returns true if the game has ended via marshal captured, checkmate, stalemate, or fourfold repetition.
+Returns true if the game has ended via marshal captured, checkmate, stalemate, fourfold repetition, or insufficient material.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
@@ -533,12 +540,34 @@ gungi.isGameOver();
 
 ### .isStalemate()
 
-Returns true if the current player has no legal moves but is not in check.
+Returns true if the current player is in stalemate (not in check but all moves would result in being in check). This is a draw condition.
 
 ```ts
-const gungi = new Gungi(ADVANCED_POSITION);
+// stalemate position - black marshal cornered, not in check, but all moves lead to check
+const gungi = new Gungi('8m/9/7DD/7C1/9/9/9/9/M8 -/- b 3 - 1');
 gungi.isStalemate();
+// -> true
+gungi.inCheck();
 // -> false
+gungi.isDraw();
+// -> true
+gungi.isGameOver();
+// -> true
+```
+
+### .isInsufficientMaterial()
+
+Returns true if only two marshals remain on the board and in hand, and they are not adjacent to each other. This is a draw condition in Gungi.
+
+```ts
+// only two non-adjacent marshals remain
+const gungi = new Gungi('m8/9/9/9/9/9/9/9/8M -/- w 3 - 1');
+gungi.isInsufficientMaterial();
+// -> true
+gungi.isDraw();
+// -> true
+gungi.isGameOver();
+// -> true
 ```
 
 ### .load(fen)

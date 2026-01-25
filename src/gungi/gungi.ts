@@ -13,6 +13,7 @@ import {
 	generateArata,
 	generateMovesForSquare,
 	isSquareAttacked,
+	wouldBeInCheckAfterMove,
 } from './move_gen';
 import { encodePGN, parsePGN, PGNOptions } from './pgn';
 import { assignPieceIdsWithState } from './piece-ids';
@@ -39,6 +40,8 @@ import {
 	MARSHAL,
 	Move,
 	MUSKETEER,
+	piece,
+	Piece,
 	pieceToFenCode,
 	RIDER,
 	SetupMode,
@@ -251,6 +254,26 @@ export class Gungi {
 		return true;
 	}
 
+	#hasEscapingMove(): boolean {
+		const fen = this.fen();
+
+		for (const sq of SQUARES) {
+			const moves = generateMovesForSquare(sq, fen);
+			for (const move of moves) {
+				if (!wouldBeInCheckAfterMove(move)) return true;
+			}
+		}
+
+		for (const hp of this.#hand) {
+			const moves = generateArata(hp, fen);
+			for (const move of moves) {
+				if (!wouldBeInCheckAfterMove(move)) return true;
+			}
+		}
+
+		return false;
+	}
+
 	inCheck(color?: Color): boolean {
 		const c = color ?? this.turn();
 		return checkDetection(c, this.fen());
@@ -258,25 +281,57 @@ export class Gungi {
 
 	isCheckmate(): boolean {
 		if (this.inDraft()) return false;
-		if (isGameOver(this.#board)) return false; // marshal captured, not checkmate
-		return this.#hasNoLegalMoves() && this.inCheck();
+		if (isGameOver(this.#board)) return false;
+		return this.inCheck() && !this.#hasEscapingMove();
 	}
 
 	isStalemate(): boolean {
 		if (this.inDraft()) return false;
 		if (isGameOver(this.#board)) return false;
-		return this.#hasNoLegalMoves() && !this.inCheck();
+		return !this.inCheck() && !this.#hasEscapingMove();
+	}
+
+	isInsufficientMaterial(): boolean {
+		if (this.inDraft()) return false;
+
+		if (this.#hand.some((p) => p.type !== piece.marshal)) return false;
+
+		const pieces = this.#board
+			.flat()
+			.flat()
+			.filter((p) => p !== null) as Piece[];
+		const nonMarshals = pieces.filter((p) => p.type !== piece.marshal);
+		if (nonMarshals.length > 0) return false;
+
+		const marshals = pieces.filter((p) => p.type === piece.marshal);
+		if (marshals.length !== 2) return false;
+
+		const [m1, m2] = marshals;
+		const [r1, f1] = m1.square.split('-').map(Number);
+		const [r2, f2] = m2.square.split('-').map(Number);
+
+		const rankDiff = Math.abs(r1 - r2);
+		const fileDiff = Math.abs(f1 - f2);
+
+		const isAdjacent = rankDiff <= 1 && fileDiff <= 1;
+
+		return !isAdjacent;
 	}
 
 	isDraw(): boolean {
-		return this.isStalemate() || this.isFourfoldRepetition();
+		return (
+			this.isStalemate() ||
+			this.isFourfoldRepetition() ||
+			this.isInsufficientMaterial()
+		);
 	}
 
 	isGameOver() {
 		if (this.inDraft()) return false;
 		if (isGameOver(this.#board)) return true; // marshal captured
 		if (this.isFourfoldRepetition()) return true;
-		return this.#hasNoLegalMoves(); // checkmate or stalemate
+		if (this.isInsufficientMaterial()) return true;
+		return this.isCheckmate() || this.isStalemate();
 	}
 
 	load(fen: string) {
