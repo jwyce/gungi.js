@@ -40,6 +40,8 @@ import {
 	MARSHAL,
 	Move,
 	MUSKETEER,
+	piece,
+	Piece,
 	pieceToFenCode,
 	RIDER,
 	SetupMode,
@@ -291,8 +293,39 @@ export class Gungi {
 		return !this.inCheck() && !this.#hasEscapingMove();
 	}
 
+	isInsufficientMaterial(): boolean {
+		if (this.inDraft()) return false;
+
+		if (this.#hand.some((p) => p.type !== piece.marshal)) return false;
+
+		const pieces = this.#board
+			.flat()
+			.flat()
+			.filter((p) => p !== null) as Piece[];
+		const nonMarshals = pieces.filter((p) => p.type !== piece.marshal);
+		if (nonMarshals.length > 0) return false;
+
+		const marshals = pieces.filter((p) => p.type === piece.marshal);
+		if (marshals.length !== 2) return false;
+
+		const [m1, m2] = marshals;
+		const [r1, f1] = m1.square.split('-').map(Number);
+		const [r2, f2] = m2.square.split('-').map(Number);
+
+		const rankDiff = Math.abs(r1 - r2);
+		const fileDiff = Math.abs(f1 - f2);
+
+		const isAdjacent = rankDiff <= 1 && fileDiff <= 1;
+
+		return !isAdjacent;
+	}
+
 	isDraw(): boolean {
-		return this.isStalemate() || this.isFourfoldRepetition();
+		return (
+			this.isStalemate() ||
+			this.isFourfoldRepetition() ||
+			this.isInsufficientMaterial()
+		);
 	}
 
 	isGameOver() {

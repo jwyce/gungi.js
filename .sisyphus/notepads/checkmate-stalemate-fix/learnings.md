@@ -48,3 +48,43 @@
 - `!#hasEscapingMove()` returns true if ALL moves leave marshal in check
 - For checkmate: must be in check AND all moves leave in check
 - For stalemate: must NOT be in check AND all moves would put in check
+
+## Task 5: isInsufficientMaterial() Implementation
+
+### Completed
+- Added `isInsufficientMaterial(): boolean` public method (lines 294-313)
+- Method placed after `isStalemate()` as specified
+- Imports added: `piece` and `Piece` from `./utils`
+- Updated `isDraw()` to include insufficient material check (line 315)
+
+### Implementation Details
+- Early return if in draft phase: `if (this.inDraft()) return false;`
+- Checks hand has no non-marshal pieces: `this.#hand.some(p => p.type !== piece.marshal)`
+- Counts board pieces: flattens 3D board and filters non-null
+- Checks only 2 marshals remain on board
+- Validates marshals are NOT adjacent:
+  - Parses square coordinates (e.g., "5-3" → rank=5, file=3)
+  - Calculates rank and file differences
+  - Adjacent if both diffs <= 1 (includes diagonal)
+  - Returns true (draw) only if NOT adjacent
+
+### Verification
+- TypeScript compilation: ✅ No errors
+- Build: ✅ Success (21ms ESM, 1679ms DTS)
+- LSP diagnostics: ✅ Clean
+- Comments removed: ✅ Code is self-documenting
+
+### Logic Verification
+- Insufficient material = only 2 marshals remain AND they are NOT adjacent
+- Handles all edge cases:
+  - Returns false if in draft phase
+  - Returns false if any non-marshal pieces in hand
+  - Returns false if any non-marshal pieces on board
+  - Returns false if not exactly 2 marshals
+  - Returns false if marshals are adjacent (can still fight)
+  - Returns true only if 2 non-adjacent marshals (draw condition)
+
+### Next Steps
+- Task 6: Update `isGameOver()` to include insufficient material check
+- Task 7: Add memoization for performance (optional)
+- Task 8: Update README.md with new method docs

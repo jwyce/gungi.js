@@ -130,7 +130,7 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ---
 
-- [ ] 5. Add `isInsufficientMaterial()`
+- [x] 5. Add `isInsufficientMaterial()`
 
   **What to do**:
 
@@ -154,7 +154,7 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ---
 
-- [ ] 6. Update `isDraw()`
+- [x] 6. Update `isDraw()`
 
   **What to do**:
 
