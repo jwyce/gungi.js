@@ -88,3 +88,29 @@
 - Task 6: Update `isGameOver()` to include insufficient material check
 - Task 7: Add memoization for performance (optional)
 - Task 8: Update README.md with new method docs
+
+## Task 7: isGameOver() Update
+
+### Completed
+- Updated `isGameOver()` at line 331-337
+- Added insufficient material check: `if (this.isInsufficientMaterial()) return true;`
+- Updated final return to use explicit methods: `return this.isCheckmate() || this.isStalemate();`
+- Replaced `#hasNoLegalMoves()` with explicit checkmate/stalemate checks
+
+### Implementation Order (Correct)
+1. Draft phase check: `if (this.inDraft()) return false;`
+2. Marshal captured: `if (isGameOver(this.#board)) return true;`
+3. Fourfold repetition: `if (this.isFourfoldRepetition()) return true;`
+4. **NEW** Insufficient material: `if (this.isInsufficientMaterial()) return true;`
+5. Checkmate or stalemate: `return this.isCheckmate() || this.isStalemate();`
+
+### Verification
+- TypeScript compilation: ✅ No errors
+- Build: ✅ Success (22ms ESM, 1729ms DTS)
+- LSP diagnostics: ✅ Clean
+
+### Key Improvements
+- Explicit game-over conditions in correct order
+- Insufficient material now checked before checkmate/stalemate
+- Uses explicit `isCheckmate() || isStalemate()` instead of `#hasNoLegalMoves()`
+- All 7 tasks now complete: detection methods fully implemented

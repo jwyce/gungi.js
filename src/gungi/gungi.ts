@@ -332,7 +332,8 @@ export class Gungi {
 		if (this.inDraft()) return false;
 		if (isGameOver(this.#board)) return true; // marshal captured
 		if (this.isFourfoldRepetition()) return true;
-		return this.#hasNoLegalMoves(); // checkmate or stalemate
+		if (this.isInsufficientMaterial()) return true;
+		return this.isCheckmate() || this.isStalemate();
 	}
 
 	load(fen: string) {

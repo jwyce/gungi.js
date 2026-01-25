@@ -171,7 +171,7 @@ Fix game-ending detection to properly handle checkmate, stalemate, and insuffici
 
 ---
 
-- [ ] 7. Update `isGameOver()`
+- [x] 7. Update `isGameOver()`
 
   **What to do**:
 
