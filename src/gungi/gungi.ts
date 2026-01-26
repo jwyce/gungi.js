@@ -1,11 +1,13 @@
 import pc from 'picocolors';
+import type { ParsedFEN } from './fen';
+import type { PGNOptions } from './pgn';
+import type { Board, Color, HandPiece, Move, Piece, SetupMode } from './utils';
 import {
 	ADVANCED_POSITION,
 	BEGINNER_POSITION,
 	encodeFEN,
 	INTERMEDIATE_POSITION,
 	INTRO_POSITION,
-	ParsedFEN,
 	validateFen,
 } from './fen';
 import {
@@ -15,36 +17,30 @@ import {
 	isSquareAttacked,
 	wouldBeInCheckAfterMove,
 } from './move_gen';
-import { encodePGN, parsePGN, PGNOptions } from './pgn';
+import { encodePGN, parsePGN } from './pgn';
 import { assignPieceIdsWithState } from './piece-ids';
 import {
 	ARATA,
 	ARCHER,
 	BETRAY,
 	BLACK,
-	Board,
 	CANNON,
 	CANONICAL_NAMES,
-	Color,
 	ENGLISH_NAMES,
 	FEN_CODES,
 	FORTRESS,
 	GENERAL,
 	get,
 	getTop,
-	HandPiece,
 	isGameOver,
 	LANCER,
 	LIEUTENANT_GENERAL,
 	MAJOR_GENERAL,
 	MARSHAL,
-	Move,
 	MUSKETEER,
 	piece,
-	Piece,
 	pieceToFenCode,
 	RIDER,
-	SetupMode,
 	SOLDIER,
 	SPY,
 	SQUARES,
@@ -381,7 +377,11 @@ export class Gungi {
 		// Append game state symbols to SAN
 		if (this.isCheckmate()) {
 			this.#history.at(-1)!.san += '#';
-		} else if (this.isStalemate() || this.isFourfoldRepetition()) {
+		} else if (
+			this.isStalemate() ||
+			this.isFourfoldRepetition() ||
+			this.isInsufficientMaterial()
+		) {
 			this.#history.at(-1)!.san += '=';
 		}
 
