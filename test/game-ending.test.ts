@@ -214,4 +214,29 @@ describe('Game Ending Detection', () => {
 			expect(gungi.isDraw()).toBe(false);
 		});
 	});
+
+	describe('Draft Phase', () => {
+		it('should only generate 終 moves when player has 1 piece left in hand during draft', () => {
+			const gungi = new Gungi(
+				'9/9/9/9/9/9/9/9/4M4 D1/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 3 w 1'
+			);
+			const moves = gungi.moves() as string[];
+
+			expect(moves.length).toBeGreaterThan(0);
+			expect(moves.every((m) => m.endsWith('終'))).toBe(true);
+		});
+
+		it('should generate both regular and 終 moves when player has 2+ pieces in hand during draft', () => {
+			const gungi = new Gungi(
+				'9/9/9/9/9/9/9/9/4M4 D2/m1g1i1j2w2n3r2s2f2d4c1a2k1t1 w 3 w 1'
+			);
+			const moves = gungi.moves() as string[];
+
+			const regularMoves = moves.filter((m) => !m.endsWith('終'));
+			const draftEndMoves = moves.filter((m) => m.endsWith('終'));
+
+			expect(regularMoves.length).toBeGreaterThan(0);
+			expect(draftEndMoves.length).toBeGreaterThan(0);
+		});
+	});
 });
