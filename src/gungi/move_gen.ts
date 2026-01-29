@@ -239,9 +239,19 @@ export function generateArata(piece: HandPiece, fen: string) {
 				p.type !== pieceType.marshal)
 		) {
 			const t = (p?.tier ?? 0) + 1;
-			acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
+			const playerHandCount = hand
+				.filter((h) => h.color === piece.color)
+				.reduce((sum, h) => sum + h.count, 0);
+			const isLastPiece = playerHandCount === 1;
+
 			if (drafting[piece.color]) {
+				// If only 1 piece left, must end draft - no option to continue
+				if (!isLastPiece) {
+					acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
+				}
 				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata', [], true));
+			} else {
+				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
 			}
 		}
 
