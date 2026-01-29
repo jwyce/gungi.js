@@ -1,5 +1,11 @@
 # gungi.js
 
+## 3.4.7
+
+### Patch Changes
+
+- 4d1554c: Fix draft phase softlock when player has only 1 piece left in hand
+
 ## 3.4.6
 
 ### Patch Changes
