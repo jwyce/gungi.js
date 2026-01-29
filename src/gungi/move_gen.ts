@@ -1,14 +1,9 @@
+import type { Board, Color, HandPiece, Move, Piece, PieceType } from './utils';
 import { encodeFEN, parseFEN } from './fen';
 import {
-	Board,
-	Color,
 	convert,
 	get,
 	getTop,
-	HandPiece,
-	Move,
-	Piece,
-	PieceType,
 	piece as pieceType,
 	put,
 	remove,
@@ -56,6 +51,17 @@ function getAvailableSquares(
 	const [py, px] = origin;
 	const [dy, dx] = dir;
 	const originPiece = getTop(`${py}-${px}`, board)!;
+
+	if (
+		originPiece.type === pieceType.archer &&
+		Math.abs(dy) === 1 &&
+		Math.abs(dx) === 1
+	) {
+		const wing = getTop(`${py + dy}-${px + dx}`, board);
+		if (wing && wing.tier > originPiece.tier) {
+			return [];
+		}
+	}
 
 	const availableSquares: string[] = [];
 
@@ -239,9 +245,19 @@ export function generateArata(piece: HandPiece, fen: string) {
 				p.type !== pieceType.marshal)
 		) {
 			const t = (p?.tier ?? 0) + 1;
-			acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
+			const playerHandCount = hand
+				.filter((h) => h.color === piece.color)
+				.reduce((sum, h) => sum + h.count, 0);
+			const isLastPiece = playerHandCount === 1;
+
 			if (drafting[piece.color]) {
+				// If only 1 piece left, must end draft - no option to continue
+				if (!isLastPiece) {
+					acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
+				}
 				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata', [], true));
+			} else {
+				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
 			}
 		}
 
@@ -308,7 +324,10 @@ function makeMove(move: Move, fen: string) {
 		updateHand(move.captured!, hand, true);
 	} else if (move.type === 'arata') {
 		updateHand([to], hand);
-		if (move.draftFinished) drafting[move.color] = false;
+		if (move.draftFinished) {
+			drafting[move.color] = false;
+			if (move.color === 'b') drafting.w = false;
+		}
 	}
 
 	put(to, board);
