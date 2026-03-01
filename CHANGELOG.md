@@ -1,5 +1,14 @@
 # gungi.js
 
+## 3.4.8
+
+### Patch Changes
+
+- 1c85b94: Fix two core rules in move generation and draft flow.
+
+  - End draft as soon as black selects `終`; white selecting `終` only ends white drafting rights.
+  - Correct archer diagonals so a higher tower on either side wing blocks that full diagonal.
+
 ## 3.4.7
 
 ### Patch Changes
