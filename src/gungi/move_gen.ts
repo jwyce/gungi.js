@@ -1,5 +1,5 @@
-import { encodeFEN, parseFEN } from "./fen";
-import type { Board, Color, HandPiece, Move, Piece, PieceType } from "./utils";
+import type { Board, Color, HandPiece, Move, Piece, PieceType } from './utils';
+import { encodeFEN, parseFEN } from './fen';
 import {
 	convert,
 	get,
@@ -10,7 +10,7 @@ import {
 	removeTop,
 	SQUARES,
 	updateHand,
-} from "./utils";
+} from './utils';
 
 export const dirs = [
 	[-1, 1],
@@ -45,7 +45,7 @@ function getAvailableSquares(
 	start: [number, number],
 	origin: [number, number],
 	length: number,
-	board: (Piece | null)[][][],
+	board: (Piece | null)[][][]
 ) {
 	const [y, x] = start;
 	const [py, px] = origin;
@@ -75,7 +75,7 @@ function getAvailableSquares(
 			return [];
 		}
 
-		const side = originPiece.color === "b" ? -1 : 1;
+		const side = originPiece.color === 'b' ? -1 : 1;
 		const below = getTop(`${reverse.y + side}-${reverse.x}`, board);
 
 		if (below && below.square === `${py}-${px}`) break;
@@ -100,7 +100,7 @@ function getAvailableSquares(
 		if (piece) {
 			if (!leapPieces.includes(originPiece.type)) break;
 
-			const movingForward = originPiece.color === "w" ? dy < 0 : dy > 0;
+			const movingForward = originPiece.color === 'w' ? dy < 0 : dy > 0;
 			if (!movingForward) break;
 		}
 
@@ -117,16 +117,16 @@ export function generateMovesForSquare(square: string, fen: string) {
 	const piece = getTop(square, board);
 	if (!piece || turn !== piece.color) return [];
 
-	const [py, px] = square.split("-").map(Number);
+	const [py, px] = square.split('-').map(Number);
 
 	const probes = pieceProbes[piece.type];
 	const squares = probes.flatMap((probe, i) => {
-		const pval = typeof probe === "number" ? probe : probe[0];
-		const pcarry = typeof probe === "number" ? 1 : probe[1];
+		const pval = typeof probe === 'number' ? probe : probe[0];
+		const pcarry = typeof probe === 'number' ? 1 : probe[1];
 		if (pval < 1) return [];
 
 		let [dy, dx] = dirs[i];
-		if (piece.color === "b") {
+		if (piece.color === 'b') {
 			dy *= -1;
 			dx *= -1;
 		}
@@ -142,16 +142,16 @@ export function generateMovesForSquare(square: string, fen: string) {
 		const p = getTop(s, board);
 		const t = get(s, board);
 
-		const maxTier = mode === "advanced" ? 3 : 2;
-		const marshalCanStack = ["advanced", "intermediate"].includes(mode);
+		const maxTier = mode === 'advanced' ? 3 : 2;
+		const marshalCanStack = ['advanced', 'intermediate'].includes(mode);
 
 		if (!p || !t) {
-			acc.push(createMove(piece, `${s}-1`, fen, "route"));
+			acc.push(createMove(piece, `${s}-1`, fen, 'route'));
 		} else {
 			// tsuke
 			if (p.tier < maxTier && p.type !== pieceType.marshal) {
 				if (piece.type !== pieceType.marshal || marshalCanStack) {
-					acc.push(createMove(piece, `${s}-${p.tier + 1}`, fen, "tsuke"));
+					acc.push(createMove(piece, `${s}-${p.tier + 1}`, fen, 'tsuke'));
 				}
 
 				// betrayal
@@ -165,15 +165,15 @@ export function generateMovesForSquare(square: string, fen: string) {
 
 					const betrayalOptions = Array.from(enemyCountMap.entries())
 						.filter(([type, count]) =>
-							playerHand.some((p) => p.type === type && p.count >= count),
+							playerHand.some((p) => p.type === type && p.count >= count)
 						)
 						.flatMap(([type]) => enemies.filter((e) => e.type === type));
 
 					const combos = generateCombinations(betrayalOptions);
 					acc.push(
 						...combos.map((combo) =>
-							createMove(piece, `${s}-${p.tier + 1}`, fen, "betray", combo),
-						),
+							createMove(piece, `${s}-${p.tier + 1}`, fen, 'betray', combo)
+						)
 					);
 				}
 			}
@@ -183,7 +183,7 @@ export function generateMovesForSquare(square: string, fen: string) {
 				const newTier = t.filter((p) => p.color === piece.color).length + 1;
 				const captured = t.filter((p) => p.color !== piece.color);
 				acc.push(
-					createMove(piece, `${s}-${newTier}`, fen, "capture", captured),
+					createMove(piece, `${s}-${newTier}`, fen, 'capture', captured)
 				);
 			}
 		}
@@ -196,29 +196,29 @@ export function generateArata(piece: HandPiece, fen: string) {
 	const { board, turn, mode, hand, drafting } = parseFEN(fen);
 	if (!piece || turn !== piece.color) return [];
 	const isMarshalPlaced = !hand.some(
-		(p) => p.type === pieceType.marshal && p.color === piece.color,
+		(p) => p.type === pieceType.marshal && p.color === piece.color
 	);
 	if (!isMarshalPlaced && piece.type !== pieceType.marshal) return [];
 
 	const isDraft = drafting.b || drafting.w;
-	const maxTier = mode === "advanced" ? 3 : 2;
+	const maxTier = mode === 'advanced' ? 3 : 2;
 	let ranks: number[] = [];
 	let maybe: number[] = [];
 
 	// if in draft can only place within your first 3 ranks, otherwise can placed as far as your deepest piece
 	if (isDraft) {
-		ranks = piece.color === "w" ? [7, 8, 9] : [1, 2, 3];
+		ranks = piece.color === 'w' ? [7, 8, 9] : [1, 2, 3];
 	} else {
-		const start = piece.color === "b" ? 1 : 9;
-		const end = piece.color === "b" ? 9 : 1;
-		const step = piece.color === "b" ? 1 : -1;
+		const start = piece.color === 'b' ? 1 : 9;
+		const end = piece.color === 'b' ? 9 : 1;
+		const step = piece.color === 'b' ? 1 : -1;
 		for (
 			let rank = start;
-			piece.color === "b" ? rank <= end : rank >= end;
+			piece.color === 'b' ? rank <= end : rank >= end;
 			rank += step
 		) {
 			const tops = Array.from({ length: 9 }).map((_, i) =>
-				getTop(`${rank}-${i + 1}`, board),
+				getTop(`${rank}-${i + 1}`, board)
 			);
 			if (tops.some((p) => p && p.color === piece.color)) {
 				ranks.push(...maybe, rank);
@@ -230,7 +230,7 @@ export function generateArata(piece: HandPiece, fen: string) {
 	}
 
 	const squares = ranks.flatMap((rank) =>
-		Array.from({ length: 9 }, (_, i) => `${rank}-${i + 1}`),
+		Array.from({ length: 9 }, (_, i) => `${rank}-${i + 1}`)
 	);
 
 	return squares.reduce((acc, s) => {
@@ -258,11 +258,11 @@ export function generateArata(piece: HandPiece, fen: string) {
 			if (drafting[piece.color]) {
 				// If only 1 piece left, must end draft - no option to continue
 				if (!isLastPiece) {
-					acc.push(createMove(arata, `${s}-${t}`, fen, "arata"));
+					acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
 				}
-				acc.push(createMove(arata, `${s}-${t}`, fen, "arata", [], true));
+				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata', [], true));
 			} else {
-				acc.push(createMove(arata, `${s}-${t}`, fen, "arata"));
+				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
 			}
 		}
 
@@ -274,19 +274,19 @@ function createMove(
 	piece: Piece,
 	to: string,
 	fen: string,
-	type: Move["type"],
+	type: Move['type'],
 	captured?: Piece[],
-	draftFinished?: boolean,
+	draftFinished?: boolean
 ) {
-	const from = piece.tier !== 0 ? `(${piece.square}-${piece.tier})` : "";
-	const toTier = +(to.split("-").at(-1) ?? 0);
-	const arata = type === "arata" ? "新" : "";
-	const capture = type === "capture" ? "取" : "";
+	const from = piece.tier !== 0 ? `(${piece.square}-${piece.tier})` : '';
+	const toTier = +(to.split('-').at(-1) ?? 0);
+	const arata = type === 'arata' ? '新' : '';
+	const capture = type === 'capture' ? '取' : '';
 	const tsuke =
-		type === "tsuke" || (toTier !== 1 && toTier - piece.tier > 0) ? "付" : "";
+		type === 'tsuke' || (toTier !== 1 && toTier - piece.tier > 0) ? '付' : '';
 	const betray =
-		type === "betray" ? `返${captured?.map((p) => p.type).join("")}` : "";
-	const draftDone = draftFinished ? "終" : "";
+		type === 'betray' ? `返${captured?.map((p) => p.type).join('')}` : '';
+	const draftDone = draftFinished ? '終' : '';
 
 	const move: Move = {
 		piece: piece.type,
@@ -296,7 +296,7 @@ function createMove(
 		type,
 		san: `${arata}${piece.type}${from}${capture}(${to})${betray || tsuke}${draftDone}`,
 		before: fen,
-		after: "",
+		after: '',
 		draftFinished,
 		captured,
 	};
@@ -310,7 +310,7 @@ function createMove(
 
 function makeMove(move: Move, fen: string) {
 	let { board, hand, mode, turn, drafting, moveNumber } = parseFEN(fen);
-	const [rank, file, tier] = move.to.split("-");
+	const [rank, file, tier] = move.to.split('-');
 	const to = {
 		type: move.piece,
 		color: move.color,
@@ -318,44 +318,44 @@ function makeMove(move: Move, fen: string) {
 		tier: +tier,
 	};
 
-	if (move.type === "route" || move.type === "tsuke") {
+	if (move.type === 'route' || move.type === 'tsuke') {
 		removeTop(move.from!, board);
-	} else if (move.type === "capture") {
+	} else if (move.type === 'capture') {
 		removeTop(move.from!, board);
 		remove(`${rank}-${file}`, move.captured!, board);
-	} else if (move.type === "betray") {
+	} else if (move.type === 'betray') {
 		removeTop(move.from!, board);
 		convert(`${rank}-${file}`, move.captured!, board);
 		updateHand(move.captured!, hand, true);
-	} else if (move.type === "arata") {
+	} else if (move.type === 'arata') {
 		updateHand([to], hand);
 		if (move.draftFinished) {
 			drafting[move.color] = false;
-			if (move.color === "b") drafting.w = false;
+			if (move.color === 'b') drafting.w = false;
 		}
 	}
 
 	put(to, board);
 
-	if (turn === "b" && (drafting.w || !drafting.b)) moveNumber++;
-	if (turn === "w" && !drafting.b && !drafting.w && move.draftFinished)
+	if (turn === 'b' && (drafting.w || !drafting.b)) moveNumber++;
+	if (turn === 'w' && !drafting.b && !drafting.w && move.draftFinished)
 		moveNumber++;
 
 	if (drafting.w === drafting.b) {
-		if (!move.draftFinished || turn !== "w") {
-			turn = turn === "b" ? "w" : "b";
+		if (!move.draftFinished || turn !== 'w') {
+			turn = turn === 'b' ? 'w' : 'b';
 		}
 	} else {
-		if (!drafting.b && turn === "b") {
-			turn = "w";
-		} else if (!drafting.w && turn === "w") {
-			turn = "b";
+		if (!drafting.b && turn === 'b') {
+			turn = 'w';
+		} else if (!drafting.w && turn === 'w') {
+			turn = 'b';
 		}
 	}
 
-	let gameOverSAN = "";
+	let gameOverSAN = '';
 	if (move.captured?.some((p) => p.type === pieceType.marshal))
-		gameOverSAN = "#";
+		gameOverSAN = '#';
 
 	return {
 		after: encodeFEN({ board, hand, mode, turn, drafting, moveNumber }),
@@ -387,16 +387,16 @@ function getAttackedSquares(square: string, board: Board): string[] {
 	const piece = getTop(square, board);
 	if (!piece) return [];
 
-	const [py, px] = square.split("-").map(Number);
+	const [py, px] = square.split('-').map(Number);
 	const probes = pieceProbes[piece.type];
 
 	return probes.flatMap((probe, i) => {
-		const pval = typeof probe === "number" ? probe : probe[0];
-		const pcarry = typeof probe === "number" ? 1 : probe[1];
+		const pval = typeof probe === 'number' ? probe : probe[0];
+		const pcarry = typeof probe === 'number' ? 1 : probe[1];
 		if (pval < 1) return [];
 
 		let [dy, dx] = dirs[i];
-		if (piece.color === "b") {
+		if (piece.color === 'b') {
 			dy *= -1;
 			dx *= -1;
 		}
@@ -412,9 +412,9 @@ function getAttackedSquares(square: string, board: Board): string[] {
 export function isSquareAttacked(
 	square: string,
 	byColor: Color,
-	board: Board,
+	board: Board
 ): boolean {
-	const [targetRank, targetFile] = square.split("-").map(Number);
+	const [targetRank, targetFile] = square.split('-').map(Number);
 	const targetSquare = `${targetRank}-${targetFile}`;
 
 	for (const sq of SQUARES) {
@@ -432,7 +432,7 @@ export function isSquareAttacked(
 
 export function inCheck(color: Color, fen: string): boolean {
 	const { board } = parseFEN(fen);
-	const oppositeColor = color === "w" ? "b" : "w";
+	const oppositeColor = color === 'w' ? 'b' : 'w';
 
 	// Find marshal position
 	for (const sq of SQUARES) {
