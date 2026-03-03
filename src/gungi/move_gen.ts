@@ -156,20 +156,7 @@ export function generateMovesForSquare(square: string, fen: string) {
 
 				// betrayal
 				if (piece.type === pieceType.tactician && p.color !== piece.color) {
-					const enemies = t.filter((p) => p.color !== piece.color);
-					const playerHand = hand.filter((p) => p.color === piece.color);
-					const enemyCountMap = enemies.reduce((acc, e) => {
-						acc.set(e.type, (acc.get(e.type) ?? 0) + 1);
-						return acc;
-					}, new Map<PieceType, number>());
-
-					const betrayalOptions = Array.from(enemyCountMap.entries())
-						.filter(([type, count]) =>
-							playerHand.some((p) => p.type === type && p.count >= count)
-						)
-						.flatMap(([type]) => enemies.filter((e) => e.type === type));
-
-					const combos = generateCombinations(betrayalOptions);
+					const combos = getBetrayalCombos(t, hand, piece.color);
 					acc.push(
 						...combos.map((combo) =>
 							createMove(piece, `${s}-${p.tier + 1}`, fen, 'betray', combo)
@@ -250,6 +237,11 @@ export function generateArata(piece: HandPiece, fen: string) {
 				p.type !== pieceType.marshal)
 		) {
 			const t = (p?.tier ?? 0) + 1;
+			const tower = get(s, board);
+			const betrayalCombos =
+				piece.type === pieceType.tactician && tower
+					? getBetrayalCombos(tower, hand, piece.color)
+					: [];
 			const playerHandCount = hand
 				.filter((h) => h.color === piece.color)
 				.reduce((sum, h) => sum + h.count, 0);
@@ -259,10 +251,25 @@ export function generateArata(piece: HandPiece, fen: string) {
 				// If only 1 piece left, must end draft - no option to continue
 				if (!isLastPiece) {
 					acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
+					acc.push(
+						...betrayalCombos.map((combo) =>
+							createMove(arata, `${s}-${t}`, fen, 'arata', combo)
+						)
+					);
 				}
 				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata', [], true));
+				acc.push(
+					...betrayalCombos.map((combo) =>
+						createMove(arata, `${s}-${t}`, fen, 'arata', combo, true)
+					)
+				);
 			} else {
 				acc.push(createMove(arata, `${s}-${t}`, fen, 'arata'));
+				acc.push(
+					...betrayalCombos.map((combo) =>
+						createMove(arata, `${s}-${t}`, fen, 'arata', combo)
+					)
+				);
 			}
 		}
 
@@ -285,7 +292,9 @@ function createMove(
 	const tsuke =
 		type === 'tsuke' || (toTier !== 1 && toTier - piece.tier > 0) ? '付' : '';
 	const betray =
-		type === 'betray' ? `返${captured?.map((p) => p.type).join('')}` : '';
+		type === 'betray' || (type === 'arata' && captured && captured.length > 0)
+			? `返${captured?.map((p) => p.type).join('')}`
+			: '';
 	const draftDone = draftFinished ? '終' : '';
 
 	const move: Move = {
@@ -329,6 +338,10 @@ function makeMove(move: Move, fen: string) {
 		updateHand(move.captured!, hand, true);
 	} else if (move.type === 'arata') {
 		updateHand([to], hand);
+		if (move.captured?.length) {
+			convert(`${rank}-${file}`, move.captured, board);
+			updateHand(move.captured, hand, true);
+		}
 		if (move.draftFinished) {
 			drafting[move.color] = false;
 			if (move.color === 'b') drafting.w = false;
@@ -381,6 +394,29 @@ function generateCombinations<T>(items: T[]): T[][] {
 	helper(0, []);
 
 	return result;
+}
+
+function getBetrayalCombos(
+	tower: Piece[],
+	hand: HandPiece[],
+	color: Color
+): Piece[][] {
+	const enemies = tower.filter((p) => p.color !== color);
+	if (enemies.length === 0) return [];
+
+	const playerHand = hand.filter((p) => p.color === color);
+	const enemyCountMap = enemies.reduce((acc, e) => {
+		acc.set(e.type, (acc.get(e.type) ?? 0) + 1);
+		return acc;
+	}, new Map<PieceType, number>());
+
+	const betrayalOptions = Array.from(enemyCountMap.entries())
+		.filter(([type, count]) =>
+			playerHand.some((p) => p.type === type && p.count >= count)
+		)
+		.flatMap(([type]) => enemies.filter((e) => e.type === type));
+
+	return generateCombinations(betrayalOptions);
 }
 
 function getAttackedSquares(square: string, board: Board): string[] {
