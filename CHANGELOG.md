@@ -1,5 +1,15 @@
 # gungi.js
 
+## 3.4.10
+
+### Patch Changes
+
+- 941567b: Fix tactician arata betrayal generation when stacking onto a friendly-topped tower.
+
+  - Allow `新謀(... )返X` move generation for this niche arata case.
+  - Apply betrayal conversion and hand consumption correctly for arata betrayal moves.
+  - Add regression coverage for both white and black variants.
+
 ## 3.4.9
 
 ### Patch Changes
