@@ -285,4 +285,23 @@ describe('Rules Updates', () => {
 			).toBeUndefined();
 		});
 	});
+
+	describe('Tactician onboard betrayal', () => {
+		it('allows 謀 to betray when stacking onto a friendly-topped stack with enemy underneath', () => {
+			const gungi = new Gungi(
+				'4m4/9/9/3|s:D|5/4|f:w:T|4/9/9/9/4M4 D1S1T1/- w 3 - 1'
+			);
+
+			const sanMoves = getSanMoves(gungi);
+			expect(sanMoves).toContain('謀(5-5-3)(4-6-3)付');
+			expect(sanMoves).toContain('謀(5-5-3)(4-6-3)返忍');
+
+			gungi.move('謀(5-5-3)(4-6-3)返忍');
+
+			const movedTower = gungi.get('4-6');
+			expect(movedTower?.map((p) => p.type)).toStrictEqual(['忍', '兵', '謀']);
+			expect(movedTower?.every((p) => p.color === 'w')).toBe(true);
+			expect(gungi.hand('w').find((h) => h.type === piece.spy)).toBeUndefined();
+		});
+	});
 });

@@ -155,7 +155,10 @@ export function generateMovesForSquare(square: string, fen: string) {
 				}
 
 				// betrayal
-				if (piece.type === pieceType.tactician && p.color !== piece.color) {
+				if (
+					piece.type === pieceType.tactician &&
+					t.some((towerPiece) => towerPiece.color !== piece.color)
+				) {
 					const combos = getBetrayalCombos(t, hand, piece.color);
 					acc.push(
 						...combos.map((combo) =>
