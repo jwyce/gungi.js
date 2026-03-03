@@ -205,4 +205,84 @@ describe('Rules Updates', () => {
 			expect(targets).not.toContain('7-7');
 		});
 	});
+
+	describe('Tactician arata betrayal', () => {
+		it('allows 新謀 to betray when arata onto a friendly-topped stack', () => {
+			const board = createEmptyBoard();
+			placeTower(board, '5-5', [
+				{ type: piece.soldier, color: 'b' },
+				{ type: piece.warrior, color: 'w' },
+			]);
+			placeTower(board, '1-1', [{ type: piece.marshal, color: 'b' }]);
+			placeTower(board, '9-9', [{ type: piece.marshal, color: 'w' }]);
+
+			const fen = encodeFEN({
+				board,
+				hand: [
+					{ type: piece.tactician, color: 'w', count: 1 },
+					{ type: piece.soldier, color: 'w', count: 1 },
+				],
+				turn: 'w',
+				mode: 'advanced',
+				drafting: { b: false, w: false },
+				moveNumber: 1,
+			});
+			const gungi = new Gungi(fen);
+
+			const sanMoves = getSanMoves(gungi);
+			expect(sanMoves).toContain('新謀(5-5-3)返兵');
+
+			gungi.move('新謀(5-5-3)返兵');
+
+			const movedTower = gungi.get('5-5');
+			expect(movedTower?.map((p) => p.type)).toStrictEqual(['兵', '侍', '謀']);
+			expect(movedTower?.every((p) => p.color === 'w')).toBe(true);
+
+			expect(
+				gungi.hand('w').find((h) => h.type === piece.tactician)
+			).toBeUndefined();
+			expect(
+				gungi.hand('w').find((h) => h.type === piece.soldier)
+			).toBeUndefined();
+		});
+
+		it('allows black 新謀 to betray when arata onto a friendly-topped stack', () => {
+			const board = createEmptyBoard();
+			placeTower(board, '5-5', [
+				{ type: piece.soldier, color: 'w' },
+				{ type: piece.warrior, color: 'b' },
+			]);
+			placeTower(board, '1-1', [{ type: piece.marshal, color: 'b' }]);
+			placeTower(board, '9-9', [{ type: piece.marshal, color: 'w' }]);
+
+			const fen = encodeFEN({
+				board,
+				hand: [
+					{ type: piece.tactician, color: 'b', count: 1 },
+					{ type: piece.soldier, color: 'b', count: 1 },
+				],
+				turn: 'b',
+				mode: 'advanced',
+				drafting: { b: false, w: false },
+				moveNumber: 1,
+			});
+			const gungi = new Gungi(fen);
+
+			const sanMoves = getSanMoves(gungi);
+			expect(sanMoves).toContain('新謀(5-5-3)返兵');
+
+			gungi.move('新謀(5-5-3)返兵');
+
+			const movedTower = gungi.get('5-5');
+			expect(movedTower?.map((p) => p.type)).toStrictEqual(['兵', '侍', '謀']);
+			expect(movedTower?.every((p) => p.color === 'b')).toBe(true);
+
+			expect(
+				gungi.hand('b').find((h) => h.type === piece.tactician)
+			).toBeUndefined();
+			expect(
+				gungi.hand('b').find((h) => h.type === piece.soldier)
+			).toBeUndefined();
+		});
+	});
 });
