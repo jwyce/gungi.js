@@ -239,4 +239,22 @@ describe('Game Ending Detection', () => {
 			expect(draftEndMoves.length).toBeGreaterThan(0);
 		});
 	});
+
+	describe('Checkmate with marshal capture available', () => {
+		it('is not checkmate when the checked side can capture the enemy marshal', () => {
+			const gungi = new Gungi(
+				'r1|s:n|m2r|s:g|1/4k|a:J|j2/|n:K:F|1ww1f3/1nt6/2c6/a8/1|D:D:G||S:d|6/1|N:N||S:M|6/9 I1R1F1C1A1T1/d2 w 3 - 33'
+			);
+			const move = gungi.move('小(2-4-2)(2-5-2)付');
+
+			expect(move.san).toBe('小(2-4-2)(2-5-2)付');
+			expect(gungi.inCheck('b')).toBe(true);
+			expect(gungi.isCheckmate()).toBe(false);
+			expect(gungi.isGameOver()).toBe(false);
+			expect(gungi.moves()).toContain('兵(7-7-2)取(8-7-1)#');
+
+			gungi.move('兵(7-7-2)取(8-7-1)#');
+			expect(gungi.isGameOver()).toBe(true);
+		});
+	});
 });
