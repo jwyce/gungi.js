@@ -35,9 +35,29 @@ describe('Game Ending Detection', () => {
 			const gungi = new Gungi('8m/9/7DD/7C1/9/9/9/9/M8 -/- b 3 - 1');
 			expect(gungi.inCheck()).toBe(false);
 			expect(gungi.isStalemate()).toBe(true);
-			expect(gungi.isDraw()).toBe(true);
+			// Stalemate is not a draw: the rules have no stalemate rule and do not
+			// forbid exposing the marshal, so the side to move loses.
+			expect(gungi.isDraw()).toBe(false);
 			expect(gungi.isGameOver()).toBe(true);
 			expect(gungi.moves().length).toBe(0);
+		});
+
+		it('should score stalemate as a loss for the side to move, not a draw', () => {
+			const gungi = new Gungi('8m/9/7DD/7C1/9/9/9/9/M8 -/- b 3 - 1');
+			expect(gungi.turn()).toBe('b');
+			expect(gungi.isStalemate()).toBe(true);
+			expect(gungi.isCheckmate()).toBe(false);
+			expect(gungi.isDraw()).toBe(false);
+			expect(gungi.isGameOver()).toBe(true);
+		});
+
+		it("should suffix a move that delivers stalemate with '#'", () => {
+			const gungi = new Gungi('8m/9/7DD/8C/9/9/9/9/M8 -/- w 3 - 1');
+			expect(gungi.isStalemate()).toBe(false);
+			gungi.move('砲(4-1-1)(4-2-1)');
+			expect(gungi.fen()).toBe('8m/9/7DD/7C1/9/9/9/9/M8 -/- b 3 - 1');
+			expect(gungi.isStalemate()).toBe(true);
+			expect(gungi.history().at(-1)).toBe('砲(4-1-1)(4-2-1)#');
 		});
 
 		it('should not detect stalemate when player has safe moves', () => {

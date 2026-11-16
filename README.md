@@ -513,7 +513,7 @@ gungi.isGameOver();
 
 ### .isDraw()
 
-Returns true if the game has ended in a draw via stalemate, fourfold repetition, or insufficient material.
+Returns true if the game has ended in a draw via fourfold repetition or insufficient material.
 
 ```ts
 const gungi = new Gungi(ADVANCED_POSITION);
@@ -540,7 +540,7 @@ gungi.isGameOver();
 
 ### .isStalemate()
 
-Returns true if the current player is in stalemate (not in check but all moves would result in being in check). This is a draw condition.
+Returns true if the current player is in stalemate (not in check but all moves would result in being in check). Stalemate is a loss for the side to move, and a move that delivers stalemate is suffixed with `#`.
 
 ```ts
 // stalemate position - black marshal cornered, not in check, but all moves lead to check
@@ -550,7 +550,7 @@ gungi.isStalemate();
 gungi.inCheck();
 // -> false
 gungi.isDraw();
-// -> true
+// -> false
 gungi.isGameOver();
 // -> true
 ```

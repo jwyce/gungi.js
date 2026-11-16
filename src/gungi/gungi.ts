@@ -320,11 +320,8 @@ export class Gungi {
 	}
 
 	isDraw(): boolean {
-		return (
-			this.isStalemate() ||
-			this.isFourfoldRepetition() ||
-			this.isInsufficientMaterial()
-		);
+		// Stalemate is not a draw: the side to move must expose its marshal and loses.
+		return this.isFourfoldRepetition() || this.isInsufficientMaterial();
 	}
 
 	isGameOver() {
@@ -380,13 +377,9 @@ export class Gungi {
 		this.#initializeState(found.after, found);
 
 		// Append game state symbols to SAN
-		if (this.isCheckmate()) {
+		if (this.isCheckmate() || this.isStalemate()) {
 			this.#history.at(-1)!.san += '#';
-		} else if (
-			this.isStalemate() ||
-			this.isFourfoldRepetition() ||
-			this.isInsufficientMaterial()
-		) {
+		} else if (this.isFourfoldRepetition() || this.isInsufficientMaterial()) {
 			this.#history.at(-1)!.san += '=';
 		}
 
