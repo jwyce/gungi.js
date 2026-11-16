@@ -284,6 +284,28 @@ describe('Rules Updates', () => {
 				gungi.hand('b').find((h) => h.type === piece.soldier)
 			).toBeUndefined();
 		});
+
+		it('does not count the dropped 謀 toward betraying an enemy 謀', () => {
+			const gungi = new Gungi('4m4/9/9/9/4|t:D|4/9/9/9/4M4 T1/- w 3 - 1');
+
+			const sanMoves = getSanMoves(gungi);
+			expect(sanMoves).toContain('新謀(5-5-3)付');
+			expect(sanMoves).not.toContain('新謀(5-5-3)返謀');
+		});
+
+		it('allows 新謀 to betray an enemy 謀 when a second 謀 is in hand', () => {
+			const gungi = new Gungi('4m4/9/9/9/4|t:D|4/9/9/9/4M4 T2/- w 3 - 1');
+
+			const sanMoves = getSanMoves(gungi);
+			expect(sanMoves).toContain('新謀(5-5-3)返謀');
+
+			gungi.move('新謀(5-5-3)返謀');
+
+			const movedTower = gungi.get('5-5');
+			expect(movedTower?.map((p) => p.type)).toStrictEqual(['謀', '兵', '謀']);
+			expect(movedTower?.every((p) => p.color === 'w')).toBe(true);
+			expect(gungi.hand('w')).toStrictEqual([]);
+		});
 	});
 
 	describe('Tactician onboard betrayal', () => {

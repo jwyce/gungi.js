@@ -241,9 +241,15 @@ export function generateArata(piece: HandPiece, fen: string) {
 		) {
 			const t = (p?.tier ?? 0) + 1;
 			const tower = get(s, board);
+			// the dropped tactician leaves the hand before betrayal is paid for
+			const handAfterDrop = hand.map((h) =>
+				h.type === piece.type && h.color === piece.color
+					? { ...h, count: h.count - 1 }
+					: h
+			);
 			const betrayalCombos =
 				piece.type === pieceType.tactician && tower
-					? getBetrayalCombos(tower, hand, piece.color)
+					? getBetrayalCombos(tower, handAfterDrop, piece.color)
 					: [];
 			const playerHandCount = hand
 				.filter((h) => h.color === piece.color)
