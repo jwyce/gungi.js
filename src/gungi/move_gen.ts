@@ -379,26 +379,8 @@ function makeMove(move: Move, fen: string) {
 	};
 }
 
-function generateCombinations<T>(items: T[]): T[][] {
-	const result: T[][] = [];
-
-	function helper(start: number, currentCombination: T[]) {
-		if (currentCombination.length > 0) {
-			result.push([...currentCombination]);
-		}
-
-		for (let i = start; i < items.length; i++) {
-			currentCombination.push(items[i]);
-			helper(i + 1, currentCombination);
-			currentCombination.pop(); // Backtrack
-		}
-	}
-
-	helper(0, []);
-
-	return result;
-}
-
+// Betrayal is all-or-nothing: the single option converts every enemy piece in
+// the tower, and it is offered only when the hand covers each enemy type's count.
 function getBetrayalCombos(
 	tower: Piece[],
 	hand: HandPiece[],
@@ -413,13 +395,12 @@ function getBetrayalCombos(
 		return acc;
 	}, new Map<PieceType, number>());
 
-	const betrayalOptions = Array.from(enemyCountMap.entries())
-		.filter(([type, count]) =>
+	const handCoversAll = Array.from(enemyCountMap.entries()).every(
+		([type, count]) =>
 			playerHand.some((p) => p.type === type && p.count >= count)
-		)
-		.flatMap(([type]) => enemies.filter((e) => e.type === type));
+	);
 
-	return generateCombinations(betrayalOptions);
+	return handCoversAll ? [enemies] : [];
 }
 
 function getAttackedSquares(square: string, board: Board): string[] {
