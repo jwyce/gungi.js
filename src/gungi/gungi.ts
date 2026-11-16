@@ -225,14 +225,20 @@ export class Gungi {
 	}
 
 	isFourfoldRepetition() {
-		const states = this.#history.map((move) => move.before.split(' ')[0]);
-		if (states.length) states.push(this.#history.at(-1)!.after.split(' ')[0]);
-		const frequencyMap = states.reduce((map, str) => {
-			map.set(str, (map.get(str) || 0) + 1);
-			return map;
-		}, new Map<string, number>());
+		// A position is the board, both hands and the side to move (the first
+		// three FEN fields), counted over the position before every move plus
+		// the current one. Hands only shrink, so draft positions never recur.
+		const positionKey = (fen: string) => fen.split(' ').slice(0, 3).join(' ');
+		const positions = this.#history.map((move) => positionKey(move.before));
+		positions.push(positionKey(this.fen()));
 
-		return Math.max(...frequencyMap.values()) === 4;
+		const counts = new Map<string, number>();
+		for (const key of positions) {
+			const n = (counts.get(key) ?? 0) + 1;
+			if (n >= 4) return true;
+			counts.set(key, n);
+		}
+		return false;
 	}
 
 	#hasNoLegalMoves(): boolean {

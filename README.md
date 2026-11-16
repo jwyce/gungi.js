@@ -448,7 +448,7 @@ gungi.inDraft();
 
 ### .isFourfoldRepetition()
 
-Returns true or false if the current board position has occurred four or more times.
+Returns true if the same position has occurred four or more times in the move history (the position before each move, plus the current one). A position is the board, both players' hands and the side to move (the first three FEN fields).
 
 ```ts
 const gungi = new Gungi(INTRO_POSITION);
