@@ -303,5 +303,41 @@ describe('Rules Updates', () => {
 			expect(movedTower?.every((p) => p.color === 'w')).toBe(true);
 			expect(gungi.hand('w').find((h) => h.type === piece.spy)).toBeUndefined();
 		});
+
+		it('offers only the betrayal that converts every enemy piece', () => {
+			const gungi = new Gungi(
+				'4m4/9/9/3|s:r|5/4|D:T|4/9/9/9/4M4 S1R1/- w 3 - 1'
+			);
+
+			const sanMoves = getSanMoves(gungi);
+			expect(sanMoves).toContain('謀(5-5-2)(4-6-3)付');
+			expect(
+				sanMoves.filter((m) => m.startsWith('謀(5-5-2)(4-6-3)返'))
+			).toStrictEqual(['謀(5-5-2)(4-6-3)返忍馬']);
+
+			gungi.move('謀(5-5-2)(4-6-3)返忍馬');
+
+			const movedTower = gungi.get('4-6');
+			expect(movedTower?.map((p) => p.type)).toStrictEqual(['忍', '馬', '謀']);
+			expect(movedTower?.every((p) => p.color === 'w')).toBe(true);
+			expect(gungi.hand('w').find((h) => h.type === piece.spy)).toBeUndefined();
+			expect(
+				gungi.hand('w').find((h) => h.type === piece.rider)
+			).toBeUndefined();
+		});
+
+		it('offers no betrayal when the hand cannot cover every enemy piece', () => {
+			const gungi = new Gungi('4m4/9/9/3|s:r|5/4|D:T|4/9/9/9/4M4 S1/- w 3 - 1');
+
+			const sanMoves = getSanMoves(gungi);
+			expect(sanMoves.filter((m) => m.includes('返'))).toStrictEqual([]);
+			expect(sanMoves).toContain('謀(5-5-2)(4-6-3)付');
+
+			gungi.move('謀(5-5-2)(4-6-3)付');
+
+			const movedTower = gungi.get('4-6');
+			expect(movedTower?.map((p) => p.color)).toStrictEqual(['b', 'b', 'w']);
+			expect(gungi.hand('w').find((h) => h.type === piece.spy)?.count).toBe(1);
+		});
 	});
 });
