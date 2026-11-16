@@ -241,8 +241,9 @@ export function generateArata(piece: HandPiece, fen: string) {
 		) {
 			const t = (p?.tier ?? 0) + 1;
 			const tower = get(s, board);
+			// betrayal is a main-game action; the draft only places pieces
 			const betrayalCombos =
-				piece.type === pieceType.tactician && tower
+				piece.type === pieceType.tactician && tower && !isDraft
 					? getBetrayalCombos(tower, hand, piece.color)
 					: [];
 			const playerHandCount = hand

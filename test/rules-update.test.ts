@@ -286,6 +286,35 @@ describe('Rules Updates', () => {
 		});
 	});
 
+	describe('Tactician arata betrayal during the draft', () => {
+		function getArataTo(gungi: Gungi, to: string) {
+			return getSanMoves(gungi).filter((m) => m.startsWith(`新謀(${to})`));
+		}
+
+		it('does not offer 新謀 betrayal while white is drafting', () => {
+			const gungi = new Gungi('4m4/9/9/9/9/9/9/4|s:D|4/4M4 T1S1D1/d1 w 3 wb 1');
+
+			const arata = getArataTo(gungi, '8-5-3');
+			expect(arata).toStrictEqual(['新謀(8-5-3)付', '新謀(8-5-3)付終']);
+			expect(getSanMoves(gungi).some((m) => m.includes('返'))).toBe(false);
+		});
+
+		it('does not offer 新謀 betrayal while black is drafting alone', () => {
+			const gungi = new Gungi('4m4/4|S:d|4/9/9/9/9/9/9/4M4 D1/t1s1d1 b 3 b 1');
+
+			const arata = getArataTo(gungi, '2-5-3');
+			expect(arata).toStrictEqual(['新謀(2-5-3)付', '新謀(2-5-3)付終']);
+			expect(getSanMoves(gungi).some((m) => m.includes('返'))).toBe(false);
+		});
+
+		it('still offers 新謀 betrayal on the same tower after the draft', () => {
+			const gungi = new Gungi('4m4/9/9/9/9/9/9/4|s:D|4/4M4 T1S1D1/d1 w 3 - 1');
+
+			const arata = getArataTo(gungi, '8-5-3');
+			expect(arata).toStrictEqual(['新謀(8-5-3)付', '新謀(8-5-3)返忍']);
+		});
+	});
+
 	describe('Tactician onboard betrayal', () => {
 		it('allows 謀 to betray when stacking onto a friendly-topped stack with enemy underneath', () => {
 			const gungi = new Gungi(
