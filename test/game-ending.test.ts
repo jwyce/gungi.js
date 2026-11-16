@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { Gungi } from '../src/gungi/gungi';
+import { Gungi, INTRO_POSITION } from '../src/gungi/gungi';
 
 describe('Game Ending Detection', () => {
 	describe('Checkmate', () => {
@@ -212,6 +212,114 @@ describe('Game Ending Detection', () => {
 				'3img3/1ra1|n:G|1as1/d1fwdwf2/9/8d/9/D1FWDWF1D/1SA1N1AR1/4MI3 J2N2S1R1D1/j2n2s1r1d1 b 1 - 3'
 			);
 			expect(gungi.isDraw()).toBe(false);
+		});
+	});
+
+	describe('Fourfold Repetition', () => {
+		const expectRepetition = (gungi: Gungi, value: boolean) => {
+			expect(gungi.isFourfoldRepetition()).toBe(value);
+			expect(gungi.isDraw()).toBe(value);
+			expect(gungi.isGameOver()).toBe(value);
+		};
+
+		it('should not count the same board with the other side to move as a repeat', () => {
+			// White cycles 小 through three squares, black cycles 兵 through two,
+			// so the board recurs every 5 or 7 plies with alternating sides to move,
+			// but the full position only recurs every 12 plies.
+			const gungi = new Gungi('m8/9/8d/9/9/9/J8/9/M8 -/- w 3 - 1');
+			const white = [
+				'小(7-9-1)(7-8-1)',
+				'小(7-8-1)(6-9-1)',
+				'小(6-9-1)(7-9-1)',
+			];
+			const black = ['兵(3-1-1)(4-1-1)', '兵(4-1-1)(3-1-1)'];
+			const line = Array.from({ length: 36 }, (_, i) =>
+				i % 2 === 0 ? white[(i / 2) % 3] : black[((i - 1) / 2) % 2]
+			);
+
+			line.slice(0, 17).forEach((move) => gungi.move(move));
+			// The starting board occurs for the 4th time (plies 0, 5, 12, 17),
+			// but with black to move at plies 5 and 17.
+			expect(gungi.fen().split(' ').slice(0, 3).join(' ')).toBe(
+				'm8/9/8d/9/9/9/J8/9/M8 -/- b'
+			);
+			expectRepetition(gungi, false);
+
+			line.slice(17, 35).forEach((move) => gungi.move(move));
+			expectRepetition(gungi, false);
+
+			// The starting position with white to move occurs for the 4th time
+			// (plies 0, 12, 24, 36).
+			const last = gungi.move(line[35]);
+			expect(gungi.fen()).toBe('m8/9/8d/9/9/9/J8/9/M8 -/- w 3 - 19');
+			expect(last.san).toBe('兵(4-1-1)(3-1-1)=');
+			expectRepetition(gungi, true);
+			expect(gungi.moves()).toEqual([]);
+		});
+
+		it('should not count the same board with different hands as a repeat', () => {
+			const start = 'm8/9/8d/9/9/4d4/J3D4/9/M8 D1/- w 3 - 1';
+			const gungi = new Gungi(start);
+			const shuffle = [
+				'小(7-9-1)(7-8-1)',
+				'兵(3-1-1)(4-1-1)',
+				'小(7-8-1)(7-9-1)',
+				'兵(4-1-1)(3-1-1)',
+			];
+
+			// The starting position occurs at plies 0, 4 and 8.
+			[...shuffle, ...shuffle].forEach((move) => gungi.move(move));
+			expect(gungi.fen()).toBe(start.replace(/ 1$/, ' 5'));
+			expectRepetition(gungi, false);
+
+			// Black captures the white 兵 on 7-5 and returns, and white drops its
+			// hand 兵 on 7-5: the same board with white to move, but white's hand is empty.
+			[
+				'小(7-9-1)(7-8-1)',
+				'兵(6-5-1)取(7-5-1)',
+				'小(7-8-1)(6-9-1)',
+				'兵(7-5-1)(6-5-1)',
+				'小(6-9-1)(7-9-1)',
+				'兵(3-1-1)(4-1-1)',
+				'新兵(7-5-1)',
+				'兵(4-1-1)(3-1-1)',
+			].forEach((move) => gungi.move(move));
+			expect(gungi.fen()).toBe('m8/9/8d/9/9/4d4/J3D4/9/M8 -/- w 3 - 9');
+			// 4th occurrence of the board with white to move, 1st with these hands
+			expectRepetition(gungi, false);
+			expect(gungi.moves().length).toBeGreaterThan(0);
+
+			// With empty hands the positions repeat on their own: the one after
+			// the drop (black to move) occurs at plies 15, 19, 23 and 27.
+			[...shuffle, ...shuffle, ...shuffle.slice(0, 2)].forEach((move) =>
+				gungi.move(move)
+			);
+			expectRepetition(gungi, false);
+			gungi.move(shuffle[2]);
+			expect(gungi.fen()).toBe('m8/9/9/8d/9/4d4/J3D4/9/M8 -/- b 3 - 14');
+			expectRepetition(gungi, true);
+		});
+
+		it('should detect fourfold repetition of the starting position', () => {
+			const gungi = new Gungi(INTRO_POSITION);
+			const cycle = [
+				'兵(7-1-1)(6-1-1)',
+				'侍(3-4-1)(4-4-1)',
+				'兵(6-1-1)(7-1-1)',
+				'侍(4-4-1)(3-4-1)',
+			];
+			expect(gungi.isFourfoldRepetition()).toBe(false);
+
+			for (let i = 0; i < 2; i++) {
+				cycle.forEach((move) => gungi.move(move));
+				expectRepetition(gungi, false);
+			}
+
+			cycle.slice(0, 3).forEach((move) => gungi.move(move));
+			expectRepetition(gungi, false);
+			gungi.move(cycle[3]);
+			expect(gungi.fen()).toBe(INTRO_POSITION.replace(/ 1$/, ' 7'));
+			expectRepetition(gungi, true);
 		});
 	});
 
