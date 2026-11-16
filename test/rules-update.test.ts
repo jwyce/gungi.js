@@ -121,6 +121,66 @@ describe('Rules Updates', () => {
 		});
 	});
 
+	describe('Archer diagonal jump blocking', () => {
+		// A tier-2 white archer on 8-5 jumps diagonally to 5-3 and 5-7. The
+		// straight line to each target also crosses 6-3 / 6-7.
+		const tallTower: { type: PieceType; color: Color }[] = [
+			{ type: piece.soldier, color: 'b' },
+			{ type: piece.warrior, color: 'b' },
+			{ type: piece.soldier, color: 'b' },
+		];
+		const shortTower = tallTower.slice(0, 2);
+
+		function setup(
+			towers: [string, { type: PieceType; color: Color }[]][],
+			blackMarshal = '1-1'
+		) {
+			const board = createEmptyBoard();
+			placeTower(board, '8-5', [
+				{ type: piece.soldier, color: 'w' },
+				{ type: piece.archer, color: 'w' },
+			]);
+			for (const [square, pieces] of towers) placeTower(board, square, pieces);
+			placeTower(board, blackMarshal, [{ type: piece.marshal, color: 'b' }]);
+			placeTower(board, '9-9', [{ type: piece.marshal, color: 'w' }]);
+
+			const fen = encodeFEN({
+				board,
+				hand: [],
+				turn: 'w',
+				mode: 'advanced',
+				drafting: { b: false, w: false },
+				moveNumber: 1,
+			});
+			return new Gungi(fen);
+		}
+
+		it('blocks the jump when a higher tower is on the crossed square', () => {
+			const targets = getTargets(setup([['6-3', tallTower]]), '8-5');
+			expect(targets).not.toContain('5-3');
+			for (const square of ['5-7', '6-4', '6-6', '6-5', '5-5']) {
+				expect(targets).toContain(square);
+			}
+		});
+
+		it('blocks the mirrored jump', () => {
+			const targets = getTargets(setup([['6-7', tallTower]]), '8-5');
+			expect(targets).not.toContain('5-7');
+			expect(targets).toContain('5-3');
+		});
+
+		it('keeps the jump legal when the crossed tower is not higher', () => {
+			const targets = getTargets(setup([['6-3', shortTower]]), '8-5');
+			expect(targets).toContain('5-3');
+			expect(targets).toContain('5-7');
+		});
+
+		it('blocks the attack on a marshal behind the crossed square', () => {
+			expect(setup([], '5-3').inCheck('b')).toBe(true);
+			expect(setup([['6-3', tallTower]], '5-3').inCheck('b')).toBe(false);
+		});
+	});
+
 	describe('Forward-only leap for jumping pieces', () => {
 		it('allows cannon to leap forward but not sideways/backward', () => {
 			const board = createEmptyBoard();

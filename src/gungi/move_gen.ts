@@ -87,6 +87,17 @@ function getAvailableSquares(
 	while (step < length) {
 		if (forward.x < 1 || forward.x > 9 || forward.y < 1 || forward.y > 9) break;
 
+		// the straight line to a diagonal archer target also crosses the square
+		// diagonally behind it, e.g. (±2,2) on the way to (±2,3)
+		if (
+			originPiece.type === pieceType.archer &&
+			Math.abs(dy) === 1 &&
+			Math.abs(dx) === 1
+		) {
+			const crossed = getTop(`${forward.y - dy}-${forward.x}`, board);
+			if (crossed && crossed.tier > originPiece.tier) break;
+		}
+
 		const piece = getTop(`${forward.y}-${forward.x}`, board);
 		if (piece && piece.tier > originPiece.tier) break;
 
