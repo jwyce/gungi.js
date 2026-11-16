@@ -256,10 +256,15 @@ export class Gungi {
 		for (const sq of SQUARES) {
 			const moves = generateMovesForSquare(sq, fen);
 			for (const move of moves) {
-				if (!wouldBeInCheckAfterMove(move)) return true;
+				// capturing the enemy marshal ends the game, so it always escapes
+				const capturesMarshal = move.captured?.some(
+					(p) => p.type === piece.marshal
+				);
+				if (capturesMarshal || !wouldBeInCheckAfterMove(move)) return true;
 			}
 		}
 
+		// arata never captures, so only the check-escape condition applies
 		for (const hp of this.#hand) {
 			const moves = generateArata(hp, fen);
 			for (const move of moves) {
